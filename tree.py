@@ -6,6 +6,9 @@ Tree data structure for the solving algorithm
 """
 
 class Tree():
+    """
+    Tree class for mapping combinations
+    """
     def __init__(self, head):
         self.layers = []
         self.layers.append(head)
