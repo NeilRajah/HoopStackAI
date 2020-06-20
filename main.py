@@ -24,11 +24,11 @@ from game import Game
 # print(game.add_stack([]))
 
 #lvl 4
-game = Game(4)
-print(game.add_stack([1, 1, 2, 1]))
-print(game.add_stack([2, 2, 1, 2]))
-print(game.add_stack([]))
-print(game.add_stack([]))
+# game = Game(4)
+# print(game.add_stack([1, 1, 2, 1]))
+# print(game.add_stack([2, 2, 1, 2]))
+# print(game.add_stack([]))
+# print(game.add_stack([]))
 
 #lvl 5, stuck in repeating loop with red hoops
 # game = Game(5)
@@ -38,12 +38,12 @@ print(game.add_stack([]))
 # print(game.add_stack([]))
 
 #lvl 6
-# game = Game(3)
-# print(game.add_stack([1, 2, 3]))
-# print(game.add_stack([1, 3, 2]))
-# print(game.add_stack([2, 1, 3]))
-# print(game.add_stack([]))
-# print(game.add_stack([]))
+game = Game(3)
+print(game.add_stack([1, 2, 3]))
+print(game.add_stack([1, 3, 2]))
+print(game.add_stack([2, 1, 3]))
+print(game.add_stack([]))
+print(game.add_stack([]))
 
 #lvl 7, stuck in classic 3-way repetition
 # game = Game(3)
@@ -107,4 +107,4 @@ print(game.add_stack([]))
 # game.add_stack([3,2,1,2,2])
 
 game.display()
-game.solve(print_moves=False, debug=False)
+game.solve(print_moves=False, debug=True)

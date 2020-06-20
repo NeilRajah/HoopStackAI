@@ -29,6 +29,7 @@ class Game():
         if not isinstance(stack, list):
             raise Exception('Stack must be a Python list!')
         
+        #Reverse stack so stack.pop() removes the top piece
         stack.reverse()
         self.stacks[self.STACK_LABELS[self.label_idx]] = stack
         self.label_idx += 1
@@ -40,6 +41,7 @@ class Game():
         """
         if not self.is_pair_compatible(pair_tup):
             raise Exception("Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1]))
+        
         a = self.stacks[pair_tup[0]]
         b = self.stacks[pair_tup[1]]
         b.append(a.pop())
@@ -54,10 +56,10 @@ class Game():
         a = self.stacks[pair_tup[0]]
         b = self.stacks[pair_tup[1]]
 
-        if len(a) == 0: return False
-        if len(b) == 0: return True
-        if len(b) == self.num_pieces: return False
-        if a[-1] == b[-1]: return True
+        if len(a) == 0: return False                #Can't move from empty stack
+        if len(b) == 0: return True                 #Can move to empty stack
+        if len(b) == self.num_pieces: return False  #Can't move to full stack
+        if a[-1] == b[-1]: return True              #Can move if top pieces are same
         return False
 
     def display(self):
@@ -79,12 +81,7 @@ class Game():
         """
         Print the move history to the console
         """
-        out = "{}: ".format(len(self.history))
-        for move in self.history:
-            for stack_label in move:
-                out = out + stack_label
-            out = out + " "
-        print(out)
+        self._print_tup(self.history, len(self.history))
 
     def move_and_display(self, pair_tup):
         """
@@ -105,7 +102,7 @@ class Game():
 
     def is_stack_solved_or_empty(self, lbl):
         """
-        Return if the stack is solved or not
+        Return if the stack is solved, empty or neither
         """
         return len(self.stacks[lbl]) == 0 or \
             (len(set(self.stacks[lbl])) == 1 and len(self.stacks[lbl]) == self.num_pieces)
@@ -133,7 +130,7 @@ class Game():
 
             #Create a copy of the moves for this iteration
             pairs = deepcopy(self.moves)
-            if self.debug: self._print_tup(pairs, "inital")
+            if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history)))
             if self.debug: print()
 
             #Filter out invalid moves
@@ -188,8 +185,8 @@ class Game():
         remove = []
         for pair in pairs:
             for stack in solved_empty:
-                if pair[0] == stack:
-                    remove.append(pair)
+                if pair[0] == stack: remove.append(pair)
+                    
         if len(remove) > 0:
             if self.debug: self._print_tup(pairs, "pre-emptysolved")
             if self.debug: self._print_tup(remove, "remove emptysolved")
@@ -198,7 +195,7 @@ class Game():
 
     def _remove_opposite(self, pairs):
         """
-        Remove the opposite of the last move to avoid getting stuck in a loop
+        Remove the opposite of the last move to avoid getting stuck in a two-move loop
         """
         if (self.prev_move != ''):
             for pair in pairs:
@@ -231,14 +228,14 @@ class Game():
         for stack in self.stacks:
             if self.is_stack_homogenous(stack):
                 same.append(stack)
-
         if len(same) > 0:
-            if self.debug: self._print_tup(pairs, "pre-homogenous")
-            if self.debug: self._print_tup(same, "remove homogenous")
             remove = []
             for pair in pairs:
                 for stack in same:
-                    if stack in pair: remove.append(stack)
+                    if pair[0] == stack: remove.append(pair)
+            if self.debug: self._print_tup(pairs, "pre-homogenous")
+            if self.debug: self._print_tup(same, "same homogenous")
+            if self.debug: self._print_tup(remove, "remove homogenous")
             self._subtract_lists(pairs, remove)
             if self.debug: self._print_tup(pairs, "post-homogenous")
 
