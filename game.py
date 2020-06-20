@@ -69,7 +69,7 @@ class Game():
             row = ""
             for lbl in self.stacks:
                 if i > len(self.stacks[lbl])-1:
-                    row = row + "_ "
+                    row = row + "  "
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
@@ -110,10 +110,18 @@ class Game():
         return len(self.stacks[lbl]) == 0 or \
             (len(set(self.stacks[lbl])) == 1 and len(self.stacks[lbl]) == self.num_pieces)
 
-    def solve(self, display=False):
+    def is_stack_homogenous(self, lbl):
+        """
+        Return if a stack is all the same color or not (False if empty)
+        """
+        return len(set(self.stacks[lbl])) == 1
+
+    def solve(self, print_moves=False, debug=False):
         """
         Solve the puzzle
         """
+        self.print_moves = print_moves
+        self.debug = debug
         print("*******START*******")
 
         #Start the solution by calculating all possible moves
@@ -125,26 +133,46 @@ class Game():
 
             #Create a copy of the moves for this iteration
             pairs = deepcopy(self.moves)
-            self._print_tup(pairs, "inital")
+            if self.debug: self._print_tup(pairs, "inital")
+            if self.debug: print()
 
             #Filter out invalid moves
             self._remove_empty_solved(pairs)
             self._remove_opposite(pairs)
-            self._remove_incompatibles(pairs)            
+            self._remove_incompatibles(pairs)
+            self._remove_from_homogenous(pairs)
 
-            self._print_tup(pairs, "remaining")
+            if self.debug: self._print_tup(pairs, "remaining")
 
             #Move the piece at the first of the moves left
             if len(pairs) == 0: raise Exception("Deadlock!")
-            if display: self.move_and_display(pairs[0])
+            else: 
+                if self.debug: print('choosing: ' + ''.join(pairs[0]))
+            if self.print_moves: self.move_and_display(pairs[0])
             else: self.move_pieces(pairs[0])
 
             loop += 1
+            if self.debug: print()
             
         if self.is_solved():
             print("*******SOLVED******")
+            self.display_history()
+            self._clean_up_moves()
         self.display()
         self.display_history()
+
+    def _clean_up_moves(self):
+        """
+        Streamline the solution by removing redundant moves
+        """
+        idx = 0
+        while idx < len(self.history)-1:
+            start = self.history[idx]; end = self.history[idx+1]
+            #turn AB BC to AC
+            if start[1] == end[0]:
+                self.history.pop(idx); self.history.pop(idx) 
+                self.history.insert(idx, (start[0], end[1]))
+            idx += 1      
 
     def _remove_empty_solved(self, pairs):
         """
@@ -162,8 +190,11 @@ class Game():
             for stack in solved_empty:
                 if pair[0] == stack:
                     remove.append(pair)
-        self._print_tup(remove, "empty/solved")
-        pairs = [item for item in pairs if item not in remove] #subtract the lists
+        if len(remove) > 0:
+            if self.debug: self._print_tup(pairs, "pre-emptysolved")
+            if self.debug: self._print_tup(remove, "remove emptysolved")
+            self._subtract_lists(pairs, remove)
+            if self.debug: self._print_tup(pairs, "post-emptysolved")
 
     def _remove_opposite(self, pairs):
         """
@@ -172,8 +203,10 @@ class Game():
         if (self.prev_move != ''):
             for pair in pairs:
                 if pair[0] == self.prev_move[1] and pair[1] == self.prev_move[0]:
-                    self._print_tup(pair, "opposites")
+                    if self.debug: self._print_tup(pairs, "pre-opposite")
+                    if self.debug: print('opposite: ' + ''.join(pair))
                     pairs.remove(pair)
+                    if self.debug: self._print_tup(pairs, "post-opposite")
                     break
 
     def _remove_incompatibles(self, pairs):
@@ -184,9 +217,30 @@ class Game():
         for pair in pairs:
             if not self.is_pair_compatible(pair):
                 remove.append(pair)
-        self._print_tup(remove, "incompatibles")
-        
-        pairs = [item for item in pairs if item not in remove]
+        if len(remove) > 0:
+            if self.debug: self._print_tup(pairs, "pre-incompatibles")
+            if self.debug: self._print_tup(remove, "remove incompatibles")
+            self._subtract_lists(pairs, remove)
+            if self.debug: self._print_tup(pairs, "post-incompatibles")
+
+    def _remove_from_homogenous(self, pairs):
+        """
+        Remove moves coming from a stack with all of the same colors
+        """
+        same = []
+        for stack in self.stacks:
+            if self.is_stack_homogenous(stack):
+                same.append(stack)
+
+        if len(same) > 0:
+            if self.debug: self._print_tup(pairs, "pre-homogenous")
+            if self.debug: self._print_tup(same, "remove homogenous")
+            remove = []
+            for pair in pairs:
+                for stack in same:
+                    if stack in pair: remove.append(stack)
+            self._subtract_lists(pairs, remove)
+            if self.debug: self._print_tup(pairs, "post-homogenous")
 
     def _print_tup(self, group, msg):
         """
@@ -196,3 +250,10 @@ class Game():
         for tup in group:
             elements = elements + ''.join(tup) + ' '
         print("{}: {}".format(msg, elements))
+
+    def _subtract_lists(self, a, b):
+        """
+        Subtract b from a (a - b)
+        """
+        for x in b: 
+            if x in a: a.remove(x)

@@ -13,22 +13,22 @@ from game import Game
 
 #lvl 2
 # game = Game(3)
+# game.add_stack([1, 2, 2])
+# game.add_stack([1, 1, 2])
+# game.add_stack([])
+
+#lvl 3
+# game = Game(3)
 # print(game.add_stack([1, 2, 2]))
 # print(game.add_stack([1, 1, 2]))
 # print(game.add_stack([]))
 
-#lvl 3
-game = Game(3)
-print(game.add_stack([1, 2, 2]))
-print(game.add_stack([1, 1, 2]))
-print(game.add_stack([]))
-
 #lvl 4
-# game = Game(4)
-# print(game.add_stack([1, 1, 2, 1]))
-# print(game.add_stack([2, 2, 1, 2]))
-# print(game.add_stack([]))
-# print(game.add_stack([]))
+game = Game(4)
+print(game.add_stack([1, 1, 2, 1]))
+print(game.add_stack([2, 2, 1, 2]))
+print(game.add_stack([]))
+print(game.add_stack([]))
 
 #lvl 5, stuck in repeating loop with red hoops
 # game = Game(5)
@@ -107,4 +107,4 @@ print(game.add_stack([]))
 # game.add_stack([3,2,1,2,2])
 
 game.display()
-game.solve(True)
+game.solve(print_moves=False, debug=False)
