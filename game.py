@@ -92,16 +92,16 @@ class Game():
         self.display()
         self.display_history()
 
-    def is_solved(self):
+    def _is_solved(self):
         """
         Return if the game is solved or not
         """
         for stack in self.stacks:
-            if not self.is_stack_solved_or_empty(stack):
+            if not self._is_stack_solved_or_empty(stack):
                 return False
         return True
 
-    def is_stack_solved_or_empty(self, lbl):
+    def _is_stack_solved_or_empty(self, lbl):
         """
         Return if the stack is solved, empty or neither
         """
@@ -126,7 +126,7 @@ class Game():
         self.moves = list(permutations(self.stacks, 2))
 
         num_loops = 50; loop = 0 #for preventing infinite loops
-        while not self.is_solved():
+        while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 
             #Create a copy of the moves for this iteration
@@ -143,7 +143,8 @@ class Game():
             if self.debug: self._print_tup(pairs, "remaining")
 
             #Move the piece at the first of the moves left
-            if len(pairs) == 0: raise Exception("Deadlock!")
+            if len(pairs) == 0:
+                self.display_history(); raise Exception("Deadlock!")
             if self.debug: print('choosing: ' + ''.join(pairs[0]))
             if self.print_moves: self.move_and_display(pairs[0])
             else: self.move_pieces(pairs[0])
@@ -151,7 +152,7 @@ class Game():
             loop += 1
             if self.debug: print()
             
-        if self.is_solved():
+        if self._is_solved():
             print("*******SOLVED******")
             self.display_history()
             self._clean_up_moves()
@@ -181,7 +182,7 @@ class Game():
         #Check for empty or solved stacks
         solved_empty = []
         for stack in self.stacks:
-            if self.is_stack_solved_or_empty(stack):
+            if self._is_stack_solved_or_empty(stack):
                 solved_empty.append(stack)
 
         #Eliminate all moves with pieces going from empty or solved pairs

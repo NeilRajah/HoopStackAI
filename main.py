@@ -127,12 +127,80 @@ from game import Game
 # game.add_stack([3, 5, 4, 2, 1])
 # game.add_stack([3, 5, 1])
 
-#lvl 41
-game = Game(5)
-game.add_stack([1, 2])
-game.add_stack([3,2,1,1])
-game.add_stack([3,1,3,3])
-game.add_stack([1,2,3,2,2])
+#lvl 41, inefficient stacking
+# game = Game(5)
+# game.add_stack([1, 2])
+# game.add_stack([3,2,1,1])
+# game.add_stack([3,1,3,3])
+# game.add_stack([1,2,3,2,2])
+
+#lvl 57, deadlock from not being able to go back
+# game = Game(5)
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([4, 3, 2, 1, 1])
+# game.add_stack([5, 2, 5, 1, 4])
+# game.add_stack([3, 1, 5, 2, 2])
+# game.add_stack([4, 3, 5, 5])
+# game.add_stack([4, 4])
+
+#lvl 58, efficient solve
+# game = Game(4)
+# game.add_stack([1, 2, 1, 1])
+# game.add_stack([3, 4, 3, 2])
+# game.add_stack([3, 1, 4])
+# game.add_stack([2, 4, 5, 5])
+# game.add_stack([3])
+# game.add_stack([2, 4, 5, 5])
+
+#lvl 59, deadlock
+# game = Game(5)
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([4])
+# game.add_stack([4, 4, 1, 5, 5])
+# game.add_stack([5, 4, 6, 2, 2])
+# game.add_stack([5, 2, 6, 3, 1])
+# game.add_stack([2, 6, 3, 6, 6])
+# game.add_stack([5, 4, 3, 1, 1])
+
+#lvl 60, inefficient stacking
+# game = Game(3)
+# game.add_stack([1])
+# game.add_stack([2])
+# game.add_stack([3])
+# game.add_stack([2, 1, 4])
+# game.add_stack([4, 3, 1])
+# game.add_stack([2, 4, 3])
+
+#lvl 61, efficient solve
+# game = Game(3)
+# game.add_stack([1])
+# game.add_stack([2, 3, 4])
+# game.add_stack([4, 2])
+# game.add_stack([1, 4, 5])
+# game.add_stack([3, 5, 5])
+# game.add_stack([2, 6, 3])
+# game.add_stack([1, 7, 7])
+# game.add_stack([7, 6, 6])
+
+#lvl 62, inefficient stacking right at end
+# game = Game(4)
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([4, 5, 4])
+# game.add_stack([6, 4, 5, 6])
+# game.add_stack([7, 6, 2, 2])
+# game.add_stack([5, 7, 1, 1])
+# game.add_stack([7])
+# game.add_stack([2, 7, 4, 5])
+# game.add_stack([6, 3, 3, 1])
+
+#lvl 69, deadlock
+# game = Game(5, "Nice!")
+# game.add_stack([1, 2, 3, 3, 4])
+# game.add_stack([4, 3])
+# game.add_stack([2, 4, 5, 5, 2])
+# game.add_stack([3, 4, 1])
+# game.add_stack([1, 5, 2, 5, 5])
+# game.add_stack([4, 3, 1, 1, 2])
 
 game.display()
 game.solve(print_moves=False, debug=False)
