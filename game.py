@@ -8,10 +8,11 @@ from itertools import permutations
 from copy import deepcopy
 
 class Game():
-    def __init__(self, num_rings):
+    def __init__(self, num_rings, name=None):
         """
         Create a game by declaring its max size
         """
+        if name: print(name)
         self.num_pieces = num_rings         #Max number of pieces on a stack
         self.stacks = dict()                #Stacks containing pieces
         self.STACK_LABELS = 'ABCDEFGH'      #Alphabetical labels for each stack
@@ -161,6 +162,7 @@ class Game():
         """
         Streamline the solution by removing redundant moves
         """
+        #Remove moves with intermediate steps
         idx = 0
         while idx < len(self.history)-1:
             start = self.history[idx]; end = self.history[idx+1]
@@ -169,6 +171,8 @@ class Game():
                 self.history.pop(idx); self.history.pop(idx) 
                 self.history.insert(idx, (start[0], end[1]))
             idx += 1      
+
+        #Replace moves that don't fill stacks efficiently
 
     def _remove_empty_solved(self, pairs):
         """
