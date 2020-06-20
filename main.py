@@ -144,7 +144,7 @@ from game import Game
 # game.add_stack([4, 4])
 
 #lvl 58, efficient solve
-# game = Game(4)
+# game = Game(4, "Level 58")
 # game.add_stack([1, 2, 1, 1])
 # game.add_stack([3, 4, 3, 2])
 # game.add_stack([3, 1, 4])
@@ -201,6 +201,16 @@ from game import Game
 # game.add_stack([3, 4, 1])
 # game.add_stack([1, 5, 2, 5, 5])
 # game.add_stack([4, 3, 1, 1, 2])
+
+#app level 105, deadlock
+game = Game(5, "App Level 105")
+game.add_stack([1, 2, 3, 3])
+game.add_stack([1, 4, 5, 5, 6])
+game.add_stack([6, 5, 6, 2, 2])
+game.add_stack([1])
+game.add_stack([1, 5, 1, 5, 5])
+game.add_stack([2, 3, 3, 4, 4])
+game.add_stack([3, 4, 2, 6, 6])
 
 game.display()
 game.solve(print_moves=False, debug=False)

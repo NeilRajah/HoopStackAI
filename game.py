@@ -19,7 +19,9 @@ class Game():
         self.label_idx = 0                  #Index of the current label for adding stakcs
         self.history = []                   #Move history
         self.prev_move = ''                 #Previous move
-        self.states = dict()                #All moves done and stack state
+        self.prev_pairs = None              #Moves that could be performed last iteration
+        self.prev_stacks = ''               #Remember the previous state of stacks for backtracking
+        self.backtracking = False           #Whether backtracking or not
 
     def add_stack(self, stack):
         """
@@ -43,9 +45,12 @@ class Game():
         if not self.is_pair_compatible(pair_tup):
             raise Exception("Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1]))
         
+        #Move from top of the first stack to the second
         a = self.stacks[pair_tup[0]]
         b = self.stacks[pair_tup[1]]
         b.append(a.pop())
+
+        #Save to history
         self.history.append(pair_tup)
         self.prev_move = pair_tup
         return "Moved {} from {} to {}".format(b[-1], pair_tup[0], pair_tup[1])
@@ -67,7 +72,7 @@ class Game():
         """
         Print the game out to the console
         """
-        print('-' * (len(self.stacks) + 4))
+        print('-' * (2*len(self.stacks)))
         for i in reversed(range(self.num_pieces)):
             row = ""
             for lbl in self.stacks:
@@ -76,7 +81,7 @@ class Game():
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
-        print('-' * (len(self.stacks) + 4))
+        print('-' * (2*len(self.stacks)))
 
     def display_history(self):
         """
@@ -131,8 +136,7 @@ class Game():
 
             #Create a copy of the moves for this iteration
             pairs = deepcopy(self.moves)
-            if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history)))
-            if self.debug: print()
+            if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
 
             #Filter out invalid moves
             self._remove_empty_solved(pairs)
@@ -143,11 +147,15 @@ class Game():
             if self.debug: self._print_tup(pairs, "remaining")
 
             #Move the piece at the first of the moves left
-            if len(pairs) == 0:
+            if len(pairs) == 0: #deadlock
+                self.backtracking = True
                 self.display_history(); raise Exception("Deadlock!")
-            if self.debug: print('choosing: ' + ''.join(pairs[0]))
-            if self.print_moves: self.move_and_display(pairs[0])
-            else: self.move_pieces(pairs[0])
+            else: 
+                if self.debug: print('choosing: ' + ''.join(pairs[0]))
+
+                if self.print_moves: self.move_and_display(pairs[0])
+                else: self.move_pieces(pairs[0])
+                self.prev_pairs = pairs #change to deepcopy?
 
             loop += 1
             if self.debug: print()
@@ -158,6 +166,12 @@ class Game():
             self._clean_up_moves()
         self.display()
         self.display_history()
+
+    def _filter_pairs(self, pairs):
+        """
+        Filter all possible moves down to those which can be performed
+        """
+
 
     def _clean_up_moves(self):
         """
