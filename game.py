@@ -107,7 +107,7 @@ class Game():
         return len(self.stacks[lbl]) == 0 or \
             (len(set(self.stacks[lbl])) == 1 and len(self.stacks[lbl]) == self.num_pieces)
 
-    def is_stack_homogenous(self, lbl):
+    def _is_stack_homog(self, lbl):
         """
         Return if a stack is all the same color or not (False if empty)
         """
@@ -137,14 +137,13 @@ class Game():
             self._remove_empty_solved(pairs)
             self._remove_opposite(pairs)
             self._remove_incompatibles(pairs)
-            self._remove_from_homogenous(pairs)
+            self._remove_homog_to_homog(pairs)
 
             if self.debug: self._print_tup(pairs, "remaining")
 
             #Move the piece at the first of the moves left
             if len(pairs) == 0: raise Exception("Deadlock!")
-            else: 
-                if self.debug: print('choosing: ' + ''.join(pairs[0]))
+            if self.debug: print('choosing: ' + ''.join(pairs[0]))
             if self.print_moves: self.move_and_display(pairs[0])
             else: self.move_pieces(pairs[0])
 
@@ -220,24 +219,18 @@ class Game():
             self._subtract_lists(pairs, remove)
             if self.debug: self._print_tup(pairs, "post-incompatibles")
 
-    def _remove_from_homogenous(self, pairs):
+    def _remove_homog_to_homog(self, pairs):
         """
-        Remove moves coming from a stack with all of the same colors
+        Remove moves coming from a stack with all of the same colors to a stack that's not the same color
         """
-        same = []
-        for stack in self.stacks:
-            if self.is_stack_homogenous(stack):
-                same.append(stack)
-        if len(same) > 0:
-            remove = []
-            for pair in pairs:
-                for stack in same:
-                    if pair[0] == stack: remove.append(pair)
-            if self.debug: self._print_tup(pairs, "pre-homogenous")
-            if self.debug: self._print_tup(same, "same homogenous")
-            if self.debug: self._print_tup(remove, "remove homogenous")
-            self._subtract_lists(pairs, remove)
-            if self.debug: self._print_tup(pairs, "post-homogenous")
+        remove = []
+        for pair in pairs:
+            if self._is_stack_homog(pair[0]) and not self._is_stack_homog(pair[1]):
+                remove.append(pair)
+        if self.debug: self._print_tup(pairs, "pre-homogenous")
+        if self.debug: self._print_tup(remove, "remove homogenous")
+        self._subtract_lists(pairs, remove)
+        if self.debug: self._print_tup(pairs, "post-homogenous")
 
     def _print_tup(self, group, msg):
         """
