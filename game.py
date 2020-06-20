@@ -18,6 +18,7 @@ class Game():
         self.label_idx = 0                  #Index of the current label for adding stakcs
         self.history = []                   #Move history
         self.prev_move = ''                 #Previous move
+        self.states = dict()                #All moves done and stack state
 
     def add_stack(self, stack):
         """
@@ -68,7 +69,7 @@ class Game():
             row = ""
             for lbl in self.stacks:
                 if i > len(self.stacks[lbl])-1:
-                    row = row + "  "
+                    row = row + "_ "
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
@@ -109,7 +110,7 @@ class Game():
         return len(self.stacks[lbl]) == 0 or \
             (len(set(self.stacks[lbl])) == 1 and len(self.stacks[lbl]) == self.num_pieces)
 
-    def solve(self):
+    def solve(self, display=False):
         """
         Solve the puzzle
         """
@@ -118,48 +119,80 @@ class Game():
         #Start the solution by calculating all possible moves
         self.moves = list(permutations(self.stacks, 2))
 
-        num_loops = 50
-        loop = 0
+        num_loops = 50; loop = 0 #for preventing infinite loops
         while not self.is_solved():
-            if loop >= num_loops: print("too many loops"); break
+            if loop >= num_loops: print("\nToo many loops"); break
 
             #Create a copy of the moves for this iteration
             pairs = deepcopy(self.moves)
+            self._print_tup(pairs, "inital")
 
-            #Check for empty or solved stacks
-            solved_empty = []
-            for stack in self.stacks:
-                if self.is_stack_solved_or_empty(stack):
-                    solved_empty.append(stack)
+            #Filter out invalid moves
+            self._remove_empty_solved(pairs)
+            self._remove_opposite(pairs)
+            self._remove_incompatibles(pairs)            
 
-            #Eliminate all moves with pieces going from empty or solved pairs
-            remove = list()
-            for pair in pairs:
-                for stack in solved_empty:
-                    if pair[0] == stack:
-                        remove.append(pair)
-            pairs = [item for item in pairs if item not in remove] #subtract the lists
-
-            #Eliminate the move that is the opposite as the previous move
-            if (self.prev_move != ''):
-                for pair in pairs:
-                    if pair[0] == self.prev_move[1] and pair[1] == self.prev_move[0]:
-                        pairs.remove(pair)
-                        break
-
-            #Eliminate all moves between incompatible stacks
-            remove.clear()
-            for pair in pairs:
-                if not self.is_pair_compatible(pair):
-                    remove.append(pair)
-            pairs = [item for item in pairs if item not in remove]
+            self._print_tup(pairs, "remaining")
 
             #Move the piece at the first of the moves left
-            self.move_pieces(pairs[0])
+            if len(pairs) == 0: raise Exception("Deadlock!")
+            if display: self.move_and_display(pairs[0])
+            else: self.move_pieces(pairs[0])
 
             loop += 1
+            
         if self.is_solved():
-            print("*******SOLVED*******")
+            print("*******SOLVED******")
         self.display()
         self.display_history()
+
+    def _remove_empty_solved(self, pairs):
+        """
+        Remove the empty and solved stacks from the current set of moves
+        """
+        #Check for empty or solved stacks
+        solved_empty = []
+        for stack in self.stacks:
+            if self.is_stack_solved_or_empty(stack):
+                solved_empty.append(stack)
+
+        #Eliminate all moves with pieces going from empty or solved pairs
+        remove = []
+        for pair in pairs:
+            for stack in solved_empty:
+                if pair[0] == stack:
+                    remove.append(pair)
+        self._print_tup(remove, "empty/solved")
+        pairs = [item for item in pairs if item not in remove] #subtract the lists
+
+    def _remove_opposite(self, pairs):
+        """
+        Remove the opposite of the last move to avoid getting stuck in a loop
+        """
+        if (self.prev_move != ''):
+            for pair in pairs:
+                if pair[0] == self.prev_move[1] and pair[1] == self.prev_move[0]:
+                    self._print_tup(pair, "opposites")
+                    pairs.remove(pair)
+                    break
+
+    def _remove_incompatibles(self, pairs):
+        """
+        Remove moves between incompatible stacks
+        """
+        remove = []
+        for pair in pairs:
+            if not self.is_pair_compatible(pair):
+                remove.append(pair)
+        self._print_tup(remove, "incompatibles")
         
+        pairs = [item for item in pairs if item not in remove]
+
+    def _print_tup(self, group, msg):
+        """
+        All elements of a tuple in a String
+        """
+        elements = ''
+        for tup in group:
+            elements = elements + ''.join(tup) + ' '
+        print("{}: {}".format(msg, elements))

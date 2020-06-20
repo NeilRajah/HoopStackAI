@@ -18,10 +18,10 @@ from game import Game
 # print(game.add_stack([]))
 
 #lvl 3
-# game = Game(3)
-# print(game.add_stack([1, 2, 1]))
-# print(game.add_stack([]))
-# print(game.add_stack([1, 2, 2]))
+game = Game(3)
+print(game.add_stack([1, 2, 2]))
+print(game.add_stack([1, 1, 2]))
+print(game.add_stack([]))
 
 #lvl 4
 # game = Game(4)
@@ -84,20 +84,27 @@ from game import Game
 # print(game.add_stack([4, 5, 5]))
 
 #lvl 12
-game = Game(4)
-print(game.add_stack([1, 2, 3]))
-print(game.add_stack([2, 1, 1]))
-print(game.add_stack([3, 2]))
-print(game.add_stack([3, 1, 2, 3]))
+# game = Game(4)
+# print(game.add_stack([1, 2, 3]))
+# print(game.add_stack([2, 1, 1]))
+# print(game.add_stack([3, 2]))
+# print(game.add_stack([3, 1, 2, 3]))
 
 #lvl 13, hoops repeatedly moving to empty stack
-game = Game(5)
-print(game.add_stack([1,2,1,3,2]))
-print(game.add_stack([4]))
-print(game.add_stack([3]))
-print(game.add_stack([4,3,4,1]))
-print(game.add_stack([3,4,2,1,1]))
-print(game.add_stack([4,2,2,3]))
+# game = Game(5)
+# print(game.add_stack([1,2,1,3,2]))
+# print(game.add_stack([4]))
+# print(game.add_stack([3]))
+# print(game.add_stack([4,3,4,1]))
+# print(game.add_stack([3,4,2,1,1]))
+# print(game.add_stack([4,2,2,3]))
+
+#lvl 41, hits deadlock
+# game = Game(5)
+# game.add_stack([1, 2])
+# game.add_stack([3,2,1,1])
+# game.add_stack([3,1,3,3])
+# game.add_stack([3,2,1,2,2])
 
 game.display()
-game.solve()
+game.solve(True)
