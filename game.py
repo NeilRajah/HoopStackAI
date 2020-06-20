@@ -128,34 +128,47 @@ class Game():
         print("*******START*******")
 
         #Start the solution by calculating all possible moves
-        self.moves = list(permutations(self.stacks, 2))
+        self.moves = list(permutations(self.stacks, 2)) #change to local?
 
         num_loops = 50; loop = 0 #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 
-            #Create a copy of the moves for this iteration
-            pairs = deepcopy(self.moves)
-            if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
+            if self.backtracking:
+                #Reset the stacks back one level and remove the last move done
+                #Create a copy of the moves for this iteration
+                if self.debug: print("Backtracking")
+                self.stacks = self.prev_stacks
+                self.history.pop()
 
-            #Filter out invalid moves
-            self._remove_empty_solved(pairs)
-            self._remove_opposite(pairs)
-            self._remove_incompatibles(pairs)
-            self._remove_homog_to_homog(pairs)
+                # self._remove_opposite(self.prev_pairs)
+                if self.prev_move in self.prev_pairs: self.prev_pairs.remove(self.prev_move)
+                pairs = self.prev_pairs
+                self.backtracking = False
+            else:
+                #Generate all moves and filter out invalid moves
+                pairs = deepcopy(self.moves)
+                if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
+                
+                self._remove_empty_solved(pairs)
+                self._remove_opposite(pairs)
+                self._remove_incompatibles(pairs)
+                self._remove_homog_to_homog(pairs)
+                if self.debug: print(); self._print_tup(pairs, "remaining")
 
-            if self.debug: self._print_tup(pairs, "remaining")
-
-            #Move the piece at the first of the moves left
-            if len(pairs) == 0: #deadlock
+            if len(pairs) == 0: 
+                #No moves can be performed
                 self.backtracking = True
-                self.display_history(); raise Exception("Deadlock!")
+                # self.display_history(); raise Exception("Deadlock!")
             else: 
+                #There are possible moves that can be performed
                 if self.debug: print('choosing: ' + ''.join(pairs[0]))
+
+                self.prev_stacks = self.stacks
+                self.prev_pairs = pairs 
 
                 if self.print_moves: self.move_and_display(pairs[0])
                 else: self.move_pieces(pairs[0])
-                self.prev_pairs = pairs #change to deepcopy?
 
             loop += 1
             if self.debug: print()
@@ -166,12 +179,6 @@ class Game():
             self._clean_up_moves()
         self.display()
         self.display_history()
-
-    def _filter_pairs(self, pairs):
-        """
-        Filter all possible moves down to those which can be performed
-        """
-
 
     def _clean_up_moves(self):
         """

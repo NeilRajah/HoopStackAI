@@ -134,14 +134,14 @@ from game import Game
 # game.add_stack([3,1,3,3])
 # game.add_stack([1,2,3,2,2])
 
-#lvl 57, deadlock from not being able to go back
-# game = Game(5)
-# game.add_stack([1, 2, 3, 3])
-# game.add_stack([4, 3, 2, 1, 1])
-# game.add_stack([5, 2, 5, 1, 4])
-# game.add_stack([3, 1, 5, 2, 2])
-# game.add_stack([4, 3, 5, 5])
-# game.add_stack([4, 4])
+#lvl 57, solved with a repeating move
+game = Game(5)
+game.add_stack([1, 2, 3, 3])
+game.add_stack([4, 3, 2, 1, 1])
+game.add_stack([5, 2, 5, 1, 4])
+game.add_stack([3, 1, 5, 2, 2])
+game.add_stack([4, 3, 5, 5])
+game.add_stack([4, 4])
 
 #lvl 58, efficient solve
 # game = Game(4, "Level 58")
@@ -203,14 +203,14 @@ from game import Game
 # game.add_stack([4, 3, 1, 1, 2])
 
 #app level 105, deadlock
-game = Game(5, "App Level 105")
-game.add_stack([1, 2, 3, 3])
-game.add_stack([1, 4, 5, 5, 6])
-game.add_stack([6, 5, 6, 2, 2])
-game.add_stack([1])
-game.add_stack([1, 5, 1, 5, 5])
-game.add_stack([2, 3, 3, 4, 4])
-game.add_stack([3, 4, 2, 6, 6])
+# game = Game(5, "App Level 105")
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([1, 4, 5, 5, 6])
+# game.add_stack([6, 5, 6, 2, 2])
+# game.add_stack([1])
+# game.add_stack([1, 5, 1, 5, 5])
+# game.add_stack([2, 3, 3, 4, 4])
+# game.add_stack([3, 4, 2, 6, 6])
 
 game.display()
 game.solve(print_moves=False, debug=False)
