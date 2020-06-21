@@ -134,14 +134,14 @@ from game import Game
 # game.add_stack([3,1,3,3])
 # game.add_stack([1,2,3,2,2])
 
-#lvl 57, solved with a repeating move
-game = Game(5)
-game.add_stack([1, 2, 3, 3])
-game.add_stack([4, 3, 2, 1, 1])
-game.add_stack([5, 2, 5, 1, 4])
-game.add_stack([3, 1, 5, 2, 2])
-game.add_stack([4, 3, 5, 5])
-game.add_stack([4, 4])
+#lvl 57
+# game = Game(5)
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([4, 3, 2, 1, 1])
+# game.add_stack([5, 2, 5, 1, 4])
+# game.add_stack([3, 1, 5, 2, 2])
+# game.add_stack([4, 3, 5, 5])
+# game.add_stack([4, 4])
 
 #lvl 58, efficient solve
 # game = Game(4, "Level 58")
@@ -202,15 +202,36 @@ game.add_stack([4, 4])
 # game.add_stack([1, 5, 2, 5, 5])
 # game.add_stack([4, 3, 1, 1, 2])
 
-#app level 105, deadlock
-# game = Game(5, "App Level 105")
+#app level 107, solved but weird backtracking issue (seems to be with self.history)
+# game = Game(4, "App Level 107")
 # game.add_stack([1, 2, 3, 3])
-# game.add_stack([1, 4, 5, 5, 6])
-# game.add_stack([6, 5, 6, 2, 2])
-# game.add_stack([1])
-# game.add_stack([1, 5, 1, 5, 5])
-# game.add_stack([2, 3, 3, 4, 4])
-# game.add_stack([3, 4, 2, 6, 6])
+# game.add_stack([4, 5, 6])
+# game.add_stack([6, 2, 1, 1])
+# game.add_stack([5, 4])
+# game.add_stack([3, 5, 2, 7])
+# game.add_stack([7, 3, 6, 2])
+# game.add_stack([4, 5, 4])
+# game.add_stack([6, 7, 7, 1])
+
+#app level 108
+# game = Game(4, "App Level 108")
+# game.add_stack([1, 2, 3, 2])
+# game.add_stack([2, 4, 5, 5])
+# game.add_stack([6])
+# game.add_stack([4, 5, 7, 7])
+# game.add_stack([6, 6, 3, 1])
+# game.add_stack([3, 1, 2, 3])
+# game.add_stack([6, 1, 4])
+# game.add_stack([4, 5, 7, 7])
+
+#app lvl 109, weird backtracking issue
+# game = Game(5, "App Level 109")
+# game.add_stack([1, 2, 3, 3])
+# game.add_stack([3, 2, 4, 4])
+# game.add_stack([2, 1, 2])
+# game.add_stack([2, 3, 1, 1])
+# game.add_stack([4, 1, 3, 4, 4])
 
 game.display()
-game.solve(print_moves=False, debug=False)
+game.solve(print_moves=False, debug=True)
+game.display_history()
