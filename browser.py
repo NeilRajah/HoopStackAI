@@ -57,17 +57,23 @@ def _game_from_image(img):
 
 if __name__ == '__main__':
     #Create the game
-    game = Game(5, "Level 31")
-    game.add_stack([1])
-    game.add_stack([1,2,3])
-    game.add_stack([4,1,4,3,1])
+    game = Game(5, "Level 59")
+    game.add_stack([1, 2, 3, 3])
     game.add_stack([4])
-    game.add_stack([2,3,2,4,2])
-    game.add_stack([1,4,2,3,3])
+    game.add_stack([4, 4, 1, 5, 5])
+    game.add_stack([5, 4, 6, 2, 2])
+    game.add_stack([5, 2, 6, 3, 1])
+    game.add_stack([2, 6, 3, 6, 6])
+    game.add_stack([5, 4, 3, 1, 1])
     game.solve()
 
     #Set the (x,y) coordinates of each stack
-    stack_locations = {'A': (2049, 1131), 'B': (2213, 1121), 'C': (2430, 1097), 'D': (2033, 1379), 'E': (2274, 1372), 'F': (2436, 1406)} #6
+    stack_locations6 = {'A': (2049, 1131), 'B': (2213, 1121), 'C': (2430, 1097), 'D': (2033, 1379), 'E': (2274, 1372), 'F': (2436, 1406)} #6
+    stack_locations7 = {'A': (3906, -1210), 'B': (4075, -1201), 'C': (4248, -1213), 'D': (3769, -958), 'E': (3958, -954),
+                       'F': (4179, -938), 'G': (4377, -965)}
 
-    _play_game(game, stack_locations)
+    try:
+        _play_game(game, stack_locations6)
+    except KeyboardInterrupt:
+        print('keyboard exit')
     # _get_click_locations()

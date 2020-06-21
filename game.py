@@ -6,6 +6,7 @@ Game class with all interactions
 """
 from itertools import permutations
 from copy import deepcopy
+import matplotlib.pyplot as plt
 
 class Game():
     def __init__(self, num_rings, name=None):
@@ -18,8 +19,8 @@ class Game():
         self.STACK_LABELS = 'ABCDEFGH'      #Alphabetical labels for each stack
         self.label_idx = 0                  #Index of the current label for adding stakcs
         self.history = []                   #Move history
-        self.prev_move = ''                 #Previous move
-        self.prev_pairs = []              #Moves that could be performed last iteration
+        self.prev_moves = []                #Previous move
+        self.prev_pairs = []                #Moves that could be performed last iteration
         self.prev_stacks = []               #Remember the previous state of stacks for backtracking
         self.backtracking = False           #Whether backtracking or not
 
@@ -52,7 +53,7 @@ class Game():
 
         #Save to history
         self.history.append(pair_tup)
-        self.prev_move = pair_tup
+        self.prev_moves.append(pair_tup)
         return "Moved {} from {} to {}".format(b[-1], pair_tup[0], pair_tup[1])
 
     def is_pair_compatible(self, pair_tup):
@@ -119,6 +120,17 @@ class Game():
         """
         return len(set(self.stacks[lbl])) == 1
 
+    def _undo(self):
+        """
+        Undo the last move done (for backtracking)
+        """
+        if len(self.history) > 0:
+            pair = self.history.pop()[::-1]  # opposite of last move done
+            a = self.stacks[pair[0]]
+            b = self.stacks[pair[1]]
+            b.append(a.pop())
+        if len(self.prev_moves) > 0: self.prev_moves.pop()
+
     def solve(self, print_moves=False, debug=False):
         """
         Solve the puzzle
@@ -128,48 +140,44 @@ class Game():
         print("*******START*******")
 
         #Start the solution by calculating all possible moves
-        self.moves = list(permutations(self.stacks, 2)) #change to local?
-        self.prev_pairs.append(deepcopy(self.moves))
+        moves = list(permutations(self.stacks, 2)) #change to local?
+        self.prev_pairs.append(deepcopy(moves))
+        move_num = []
 
         num_loops = 100; loop = 0 #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 
             if self.backtracking:
-                #Reset the stacks back one level and remove the last move done
-                #Create a copy of the moves for this iteration
-                if self.debug: print("Backtracking")
-                prev_pairs = self.prev_pairs.pop()
-                if self.debug: print('pre backtrack pairs', prev_pairs)
-                self.stacks = self.prev_stacks.pop()
-                if len(self.history) > 0: self.history.pop()
-
-                if self.prev_move in prev_pairs: prev_pairs.remove(self.prev_move)
-                self._remove_opposite(prev_pairs)
-                if self.debug: print('post backtrack pairs', prev_pairs)
-                pairs = prev_pairs
+                #Undo the last move, reset the pairs to the last set and move forward
+                if self.debug: self._print_tup(pairs, 'pre-backtracking pairs')
+                pairs = self.prev_pairs.pop()
+                if len(self.prev_moves) > 0 and self.prev_moves[-1] in pairs: pairs.remove(self.prev_moves[-1])
+                self._undo()
                 self.backtracking = False
+                if self.debug: print(pairs, 'post-backtracking pairs')
             else:
                 #Generate all moves and filter out invalid moves
-                pairs = deepcopy(self.moves)
+                pairs = deepcopy(moves)
                 if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
                 
                 self._remove_empty_solved(pairs)
                 self._remove_opposite(pairs)
                 self._remove_incompatibles(pairs)
                 self._remove_homog_to_homog(pairs)
-                if self.debug: print(); self._print_tup(pairs, "remaining")
+                if self.debug: self._print_tup(pairs, "remaining")
 
             if len(pairs) == 0: 
                 #No moves can be performed
                 self.backtracking = True
+                if self.debug: move_num.append(len(self.history)); print('BACKTRACKING on move', len(self.history))
             else: 
                 #There are possible moves that can be performed
-                if self.debug: print('choosing: ' + ''.join(pairs[0]))
+                # if self.debug: print('choosing: ', pairs[0])
 
                 self.prev_stacks.append(deepcopy(self.stacks))
                 self.prev_pairs.append(deepcopy(pairs))
-                print('current and prev', pairs, '|||', self.prev_pairs[-2])
+                # print('current and prev', pairs, '|||', self.prev_pairs[-2])
 
                 if self.print_moves: self.move_and_display(pairs[0])
                 else: self.move_pieces(pairs[0])
@@ -181,6 +189,7 @@ class Game():
             print("*******SOLVED******")
             self.display_history()
             self._clean_up_moves(); print()
+        if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         self.display()
         self.display_history()
 
@@ -226,14 +235,13 @@ class Game():
         """
         Remove the opposite of the last move to avoid getting stuck in a two-move loop
         """
-        if (self.prev_move != ''):
-            for pair in pairs:
-                if pair[0] == self.prev_move[1] and pair[1] == self.prev_move[0]:
-                    # if self.debug: self._print_tup(pairs, "pre-opposite")
-                    # if self.debug: print('opposite: ' + ''.join(pair))
-                    pairs.remove(pair)
-                    # if self.debug: self._print_tup(pairs, "post-opposite")
-                    break
+        if len(self.prev_moves) > 0:
+            opp = self.prev_moves[-1][::-1]
+            if opp in pairs:
+                # self._print_tup(pairs, 'pre-opposite')
+                # print('opposite: ' + ''.join(opp))
+                pairs.remove(opp)
+                # self._print_tup(pairs, 'post-opposite')
 
     def _remove_incompatibles(self, pairs):
         """
@@ -257,10 +265,11 @@ class Game():
         for pair in pairs:
             if self._is_stack_homog(pair[0]) and not self._is_stack_homog(pair[1]):
                 remove.append(pair)
-        # if self.debug: self._print_tup(pairs, "pre-homogenous")
-        # if self.debug: self._print_tup(remove, "remove homogenous")
-        self._subtract_lists(pairs, remove)
-        # if self.debug: self._print_tup(pairs, "post-homogenous")
+        if len(remove) > 0:
+            # if self.debug: self._print_tup(pairs, "pre-homogenous")
+            # if self.debug: self._print_tup(remove, "remove homogenous")
+            self._subtract_lists(pairs, remove)
+            # if self.debug: self._print_tup(pairs, "post-homogenous")
 
     def _print_tup(self, group, msg):
         """

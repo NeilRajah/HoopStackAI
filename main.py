@@ -152,7 +152,7 @@ from game import Game
 # game.add_stack([3])
 # game.add_stack([2, 4, 5, 5])
 
-#lvl 59, deadlock
+#lvl 59
 # game = Game(5)
 # game.add_stack([1, 2, 3, 3])
 # game.add_stack([4])
@@ -231,6 +231,17 @@ from game import Game
 # game.add_stack([2, 1, 2])
 # game.add_stack([2, 3, 1, 1])
 # game.add_stack([4, 1, 3, 4, 4])
+
+#app level 110, stuck in forced deadlock from repeating moves, explodes somewhere along the way
+game = Game(5)
+game.add_stack([1,2,1,1])
+game.add_stack([3,2])
+game.add_stack([2,1,3,3,4])
+game.add_stack([5,4,4,6,6])
+game.add_stack([6,7,7,4,4])
+game.add_stack([7,2,2,5,5])
+game.add_stack([3,5,5,3])
+game.add_stack([1,6,7,6,7])
 
 game.display()
 game.solve(print_moves=False, debug=True)
