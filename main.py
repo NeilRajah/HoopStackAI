@@ -4,6 +4,8 @@ Author: Neil Balaskandarajah
 Created on: 17/06/2020
 AI for solving hoop stack game
 """
+import time
+
 from game import Game
 
 #lvl 1
@@ -244,5 +246,6 @@ game.add_stack([3,5,5,3])
 game.add_stack([1,6,7,6,7])
 
 game.display()
+t1 = time.time()
 game.solve(print_moves=False, debug=True)
 game.display_history()

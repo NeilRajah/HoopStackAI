@@ -10,6 +10,9 @@ from game import Game
 
 #load the image in
 img = cv2.imread('lvl58.png', cv2.IMREAD_COLOR)
+cv2.imshow('regular', img)
+img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  #convert regular BRG img to gray
+cv2.imshow('grayscale', img_gray)
 
 #Drawing on images
 # cv2.line(img, (0,0), (100,100), (0, 0, 255), 5)  #line
@@ -35,12 +38,18 @@ roi = img[100:150, 100:150]
 #Thresholding
 rows, cols, channels = img.shape
 roi = img[0:rows, 0:cols]
-img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  #convert regular BRG img to gray
 ret, mask = cv2.threshold(img_gray, 140, 255, cv2.THRESH_BINARY_INV)  #if pixel value above 220, conv to 0, below to 255
-# cv2.imshow('mask', mask)
+# cv2.imshow('invbin', mask)
 
 gaus = cv2.adaptiveThreshold(img_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 115, 1)
-cv2.imshow('gaus', gaus)
+# cv2.imshow('gaus', gaus)
 
-# cv2.imshow('image', img)
+#Color filtering
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  #Convert BGR to HSV
+lower_clr = np.array([50, 0, 190]); upper_clr = np.array([255, 255, 255])  #Top and bottom bounds in HSV
+
+mask = cv2.inRange(hsv, lower_clr, upper_clr)  #pixels in the range of lower and upper
+res = cv2.bitwise_not(img, img_gray, mask=mask)
+cv2.imshow('filtered', res)
+
 cv2.waitKey(0); cv2.destroyAllWindows()

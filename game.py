@@ -4,6 +4,7 @@ Author: Neil Balaskandarajah
 Created on: 18/06/2020
 Game class with all interactions
 """
+import time
 from itertools import permutations
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -143,6 +144,7 @@ class Game():
         moves = list(permutations(self.stacks, 2)) #change to local?
         self.prev_pairs.append(deepcopy(moves))
         move_num = []
+        t1 = time.time()
 
         num_loops = 100; loop = 0 #for preventing infinite loops
         while not self._is_solved():
@@ -189,6 +191,7 @@ class Game():
             print("*******SOLVED******")
             self.display_history()
             self._clean_up_moves(); print()
+        print('time to solve: {}s'.format(time.time() - t1))
         if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         self.display()
         self.display_history()
