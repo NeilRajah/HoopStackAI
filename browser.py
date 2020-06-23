@@ -123,37 +123,58 @@ def _create_game_from_image(file, stack_locations):
     # Blur to get a more consistent color per stack
     img = cv2.medianBlur(img, 19)
 
-    #Get shape for each contour (find color, if within a tolerance, same color; blur/smoothen a region?
-    contours, _ = cv2.findContours(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #Get the individual contours
+    imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    contours, _ = cv2.findContours(imgray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #Create a mask and draw the contours onto the mask
-    idx = 0
+    #Filter out tiny contours
+
+    #Add to this to determine number
+    colors = {}; idx = 1; TOL = 5
+
+    #Create the stacks from the contours
     for c in contours:
-        mask = np.zeros(img.shape[:2], np.uint8)
-        cv2.drawContours(mask, [c], 0, (359, 100, 255), -1)
-        cv2.imshow('mask{}'.format(idx), mask); idx += 1
-        print(cv2.mean(img, mask=mask))
+        #Get the color
+        final = np.zeros(img.shape, np.uint8)       #Matrix of the original image
+        mask = np.zeros(imgray.shape, np.uint8)     #Matrix of the gray image
+        cv2.drawContours(mask, [c], 0, 255, -1)     #Draw to the mask first
+        a,b,c,d = cv2.mean(img, mask)               #Before getting the color
+        color = np.uint8([[[a, b, c]]])
+        h = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)[0][0][0]  #Compare hue values
 
-    # rects = [cv2.boundingRect(c) for c in contours]
-    # shapes = []
-    # for c in contours:
-    #     epsilon = 0.1 * cv2.arcLength(c, True)
-    #     shapes.append(cv2.approxPolyDP(c, epsilon, True))
+        if len(colors) > 0:     #There are colors, need to check if is new or not
+            for color in colors:
+                if abs(h - color) > TOL:  #different color
+                    colors[h] = idx; idx += 1
 
-    # img = cv2.drawContours(img, contours, -1, (0,255,0), 3)
-    print(len(contours))
+        else:   #no colors in list, add the first color
+            colors[h] = idx; idx += 1
 
-    # for x,y,w,h in rects:
-        # img = cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 3)
+        #Check which stack to put it in (min dist from contour to that location)
+        closest_loc = stack_locations.get('A')
+        min_dist = _distsq(_rect_center(), closest_loc)
+        for lbl in stack_locations[1:]:
+            print(min_dist)
+            dist = _distsq(_rect_center(cv2.boundingRect(c)), stack_locations[lbl])
+            if dist < min_dist:
+                min_dist = dist
+                closest_loc = lbl
+        print(closest_loc)
 
-    # cont_img, contours = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    # cv2.drawContours(img, [contours], -1, (0, 255, 0), 3)
 
-    # for s in stack_locations:
-    #     x,y = stack_locations[s]
-    #     img = cv2.circle(img, (x,y), 10, (0,0,255), -1)
+    # cv2.imshow('game_img', img); cv2.waitKey(0); cv2.destroyAllWindows()
 
-    cv2.imshow('game_img', img); cv2.waitKey(0); cv2.destroyAllWindows()
+def _distsq(p1, p2):
+    """
+    Get the distance squared between two points
+    """
+    return (p2[0] - p1[0])**2 + (p2[1] - p1[0])**2
+
+def _rect_center(r):
+    """
+    Return the center of a rectangle in (x,y)
+    """
+    return r.x + r.w // 2, r.y + r.h // 2
 
 if __name__ == '__main__':
     #Create the game

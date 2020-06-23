@@ -289,3 +289,9 @@ class Game():
         """
         for x in b: 
             if x in a: a.remove(x)
+
+    def add_piece(self, stack, piece):
+        """
+        Add a piece to a stack when creating the game
+        """
+        self.stacks[stack].append(piece)
