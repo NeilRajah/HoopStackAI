@@ -112,57 +112,76 @@ def _create_game_from_image(file, stack_locations):
 
     #Filter out the background
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # Convert BGR to HSV
-    lower_clr = np.array([60, 0, 235]); upper_clr = np.array([255, 255, 255])
+    lower_clr = np.array([60, 0, 20]); upper_clr = np.array([255, 255, 255])
     no_bg = cv2.inRange(hsv, lower_clr, upper_clr)
     img = cv2.bitwise_and(img, img, mask=no_bg)
 
-    #Erode out stacks to get each hoop individually
-    m = 6; morph_kernel = np.ones((m,m), np.uint8)
-    img = cv2.erode(img, morph_kernel, iterations=1)
-
     # Blur to get a more consistent color per stack
-    img = cv2.medianBlur(img, 19)
+    img = cv2.medianBlur(img, 5)
 
-    #Get the individual contours
-    imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    contours, _ = cv2.findContours(imgray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # e = 5; img = cv2.erode(img, np.ones((e,e), np.uint8))
+    # img = cv2.dilate(img, np.ones((3,3), np.uint8))
 
-    #Filter out tiny contours
+    cv2.imshow('img', img)
 
-    #Add to this to determine number
-    colors = {}; idx = 1; TOL = 5
+    #k means clustering
+    z = np.float32(img.reshape((-1,3)))
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    k = 2
+    ret, label, center = cv2.kmeans(z, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
-    #Create the stacks from the contours
-    for c in contours:
-        #Get the color
-        final = np.zeros(img.shape, np.uint8)       #Matrix of the original image
-        mask = np.zeros(imgray.shape, np.uint8)     #Matrix of the gray image
-        cv2.drawContours(mask, [c], 0, 255, -1)     #Draw to the mask first
-        a,b,c,d = cv2.mean(img, mask)               #Before getting the color
-        color = np.uint8([[[a, b, c]]])
-        h = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)[0][0][0]  #Compare hue values
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res2 = res.reshape((img.shape))
 
-        if len(colors) > 0:     #There are colors, need to check if is new or not
-            for color in colors:
-                if abs(h - color) > TOL:  #different color
-                    colors[h] = idx; idx += 1
+    cv2.imshow('kmeans', res2)
 
-        else:   #no colors in list, add the first color
-            colors[h] = idx; idx += 1
+    cv2.waitKey(0); cv2.destroyAllWindows()
 
-        #Check which stack to put it in (min dist from contour to that location)
-        closest_loc = stack_locations.get('A')
-        min_dist = _distsq(_rect_center(), closest_loc)
-        for lbl in stack_locations[1:]:
-            print(min_dist)
-            dist = _distsq(_rect_center(cv2.boundingRect(c)), stack_locations[lbl])
-            if dist < min_dist:
-                min_dist = dist
-                closest_loc = lbl
-        print(closest_loc)
+    # cv2.imshow('game_img', img);
+    cv2.waitKey(0); cv2.destroyAllWindows()
 
+def _filter_window(img):
+    """
+    Window with trackbars for tuning filters
+    """
+    win_name = 'HSV Tuning'
+    def nothing(x): pass
+    cv2.namedWindow(win_name)
+    cv2.createTrackbar('bottom H', win_name, 0, 255, nothing)
+    cv2.createTrackbar('bottom S', win_name, 0, 255, nothing)
+    cv2.createTrackbar('bottom V', win_name, 0, 255, nothing)
+    cv2.createTrackbar('top H', win_name, 0, 255, nothing)
+    cv2.createTrackbar('top S', win_name, 0, 255, nothing)
+    cv2.createTrackbar('top V', win_name, 0, 255, nothing)
+    # cv2.imshow('img', img)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # Convert BGR to HSV
+    # cv2.imshow('img', img)
 
-    # cv2.imshow('game_img', img); cv2.waitKey(0); cv2.destroyAllWindows()
+    while 1:
+        k = cv2.waitKey(1) & 0xFF
+        if k == 27: break
+
+        H_bot = cv2.getTrackbarPos('bottom H', win_name)
+        S_bot = cv2.getTrackbarPos('bottom S', win_name)
+        V_bot = cv2.getTrackbarPos('bottom V', win_name)
+        H_top = cv2.getTrackbarPos('top H', win_name)
+        S_top = cv2.getTrackbarPos('top S', win_name)
+        V_top = cv2.getTrackbarPos('top V', win_name)
+
+        # Filter out the background
+        lower_clr = np.array([H_bot, S_bot, V_bot]); upper_clr = np.array([H_top, S_top, V_top])
+        no_bg = cv2.inRange(hsv, lower_clr, upper_clr)
+        img = cv2.bitwise_and(img, img, mask=no_bg)
+
+        # Blur to get a more consistent color per stack
+        # img = cv2.medianBlur(img, 19)
+        cv2.imshow('no_bg', no_bg)
+        cv2.imshow(win_name, img)
+
+    #17, 0, 239; 255, 255, 255
+
+    cv2.destroyAllWindows()
 
 def _distsq(p1, p2):
     """
@@ -176,30 +195,57 @@ def _rect_center(r):
     """
     return r.x + r.w // 2, r.y + r.h // 2
 
+def _take_screenshots():
+    """
+    Take screenshots of stacks for testing
+    """
+    pag.alert('Hit ENTER when mouse is at the top left of the stacks bound')
+    x1, y1 = pag.position()
+    pag.alert('Hit ENTER when mouse is at the bottom right of the stacks bound')
+    x2, y2 = pag.position()
+
+    i = 0; done = False
+    while not done:
+        file = 'tests\\lvl{}.png'.format(i)
+        sleep(0.25)
+        pag.screenshot(file, region=(x1, y1, x2-x1, y2-y1))
+        i += 1
+        done = pag.confirm('Press OK if done, Cancel if continuing') == 'OK'
+        if not done:
+            pag.alert('Press OK when next level is open')
+
+def _play_hardcoded_game():
+    """
+    Play the game with hard-coded values
+    """
+    # Create the game
+    game = Game(5, "Level 59")
+    game.add_stack([1, 2, 3, 3])
+    game.add_stack([4])
+    game.add_stack([4, 4, 1, 5, 5])
+    game.add_stack([5, 4, 6, 2, 2])
+    game.add_stack([5, 2, 6, 3, 1])
+    game.add_stack([2, 6, 3, 6, 6])
+    game.add_stack([5, 4, 3, 1, 1])
+    game.solve()
+
+    # Set the (x,y) coordinates of each stack
+    stack_locations6 = {'A': (2049, 1131), 'B': (2213, 1121), 'C': (2430, 1097), 'D': (2033, 1379), 'E': (2274, 1372), 'F': (2436, 1406)} #6
+    stack_locations7 = {'A': (3906, -1210), 'B': (4075, -1201), 'C': (4248, -1213), 'D': (3769, -958), 'E': (3958, -954),
+                       'F': (4179, -938), 'G': (4377, -965)}
+
+    _play_game(game, stack_locations6)
+
 if __name__ == '__main__':
-    #Create the game
-    # game = Game(5, "Level 59")
-    # game.add_stack([1, 2, 3, 3])
-    # game.add_stack([4])
-    # game.add_stack([4, 4, 1, 5, 5])
-    # game.add_stack([5, 4, 6, 2, 2])
-    # game.add_stack([5, 2, 6, 3, 1])
-    # game.add_stack([2, 6, 3, 6, 6])
-    # game.add_stack([5, 4, 3, 1, 1])
-    # game.solve()
+    print('hey')
+    # _get_click_locations()  #For hard-coded stack locations
+    # _take_screenshots()  #For collecting test data
 
-    #Set the (x,y) coordinates of each stack
-    # stack_locations6 = {'A': (2049, 1131), 'B': (2213, 1121), 'C': (2430, 1097), 'D': (2033, 1379), 'E': (2274, 1372), 'F': (2436, 1406)} #6
-    # stack_locations7 = {'A': (3906, -1210), 'B': (4075, -1201), 'C': (4248, -1213), 'D': (3769, -958), 'E': (3958, -954),
-    #                    'F': (4179, -938), 'G': (4377, -965)}
-
-    # _play_game(game, stack_locations6)
-    # _get_click_locations()
-
-    file = 'stacks.png'
+    #For files
+    # file = 'stacks.png'
     # x1, y1 = _get_image_file(file)
-    stacks = _get_stack_locations(file, show_image=False)
-    game = _create_game_from_image(file, stacks)
+    # stacks = _get_stack_locations(file, show_image=True)
+    # game = _create_game_from_image(file, stacks)
     # #Offset stack position based on where the top left was
     # for lbl in stacks:
     #     stacks[lbl] = (x1 + stacks[lbl][0], y1 + stacks[lbl][0])
