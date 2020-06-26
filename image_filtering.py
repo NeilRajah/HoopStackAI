@@ -24,7 +24,7 @@ def filter_bg(img, lower_clr=None):
     """
     # Convert to HSV
     if lower_clr is None:
-        lower_clr = np.array([15, 0, 10])
+        lower_clr = np.array([16, 0, 10])
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Filter out the background color
@@ -87,7 +87,7 @@ def game_from_browser(filename, display_image=False):
     #Filter the smaller images
     for i,stack in enumerate(stacks):
         #Remove the background
-        stack_mask = filter_bg(stack, lower_clr=np.array([30,0,10]))
+        stack_mask = filter_bg(stack, lower_clr=np.array([18,0,0]))  #H below 18 starts to get the holder
         stacks[i] = cv2.bitwise_and(stack, stack, mask=stack_mask)
         # cv2.imshow('stack', stacks[i]); cv2.waitKey(0)
     game_stacks = [get_game_stack(stack) for stack in stacks]
@@ -100,18 +100,32 @@ def get_game_stack(stack):
     """
     #Blur out and convert to HSV
     game_stacks = []
-    stack = cv2.medianBlur(stack, 19)  #; orig = stack
-    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+    # stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+    # e = 5; stack = cv2.erode(stack, np.ones((e,e), np.uint8))
+    # a = 13; sigmaColor = sigmaSpace = 1000
+    # stack = cv2.bilateralFilter(stack, a, sigmaColor, sigmaSpace)
+    # stack = cv2.medianBlur(stack, 5)
 
-    #Search down a strip of pixels to distinct colors (H values)
-    x = int(stack.shape[1] * 0.25); colors = []
+    #Add the unique colors of the stack
+    x = int(stack.shape[1] * 0.75); colors = []
     for y in range(stack.shape[0]):
-        h,s,v = stack[y,x]
-        #Get non-black or very dark colors
-        if v > 20:  #[0,255], 20 is ~9 on [0,100]
-            colors.append(h)
+        px = stack[y,x]
+        if px[2] > 20 and px[1] > 100:
+            colors.append(px)
 
-    if len(colors) > 0: plt.plot(colors); plt.show()
+    #Visualize the colors by creating an image of the colors
+    if len(colors) > 0:
+        height = 50
+        color_img = np.zeros((height, len(colors), 3), np.uint8)
+        for x,clr in enumerate(colors):
+            for y in range(height):
+                color_img[y,x] = clr
+        color_img = cv2.cvtColor(color_img, cv2.COLOR_BGR2HSV)  #Convert to HSV
+        color_img = cv2.Canny(color_img, 50, 50)
+        cv2.imshow('color_img', scale_image(color_img, 2))
+
+    print("{}: {}".format(len(colors), colors))
+    cv2.imshow('stack', scale_image(stack, 2))
 
     cv2.waitKey(0); cv2.destroyAllWindows()
 
@@ -130,4 +144,4 @@ def _avg(lst):
     return sum(lst) / len(lst)
 
 if __name__ == '__main__':
-    game_from_browser('lvl3.png', display_image=False)
+    game_from_browser('lvl1.png', display_image=False)

@@ -9,7 +9,7 @@ import numpy as np
 from game import Game
 
 #load the image in
-img = cv2.imread('lvl58.png', cv2.IMREAD_COLOR)
+img = cv2.imread('tests/lvl58.png', cv2.IMREAD_COLOR)
 # cv2.imshow('regular', img)
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  #convert regular BRG img to gray
 # cv2.imshow('grayscale', img_gray)
@@ -95,7 +95,7 @@ edge = 100; edge_img = cv2.Canny(median, edge, edge)
 #contours
 cont_img, contours = cv2.findContours(edge_img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 contours = np.array(contours).reshape((-1,1,2)).astype(np.int32)
-cv2.drawContours(img, [contours], -1, (0, 255, 0), 3)
+cv2.drawContours(img, [contours], -1, (0, 55, 0), 3)
 # cv2.imshow('contours', img)
 
 # imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
