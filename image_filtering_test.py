@@ -30,6 +30,31 @@ def _show_images_before_after(before, after):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def _display_single_image(image):
+    """
+    Display a single image to the screen
+    """
+    cv2.imshow('img', image);
+    cv2.waitKey(0);
+    cv2.destroyAllWindows()
+
+def _display_sequential(images):
+    """
+    Display a list of images one by one
+    """
+    for i,img in enumerate(images):
+        cv2.imshow('img', img)
+        cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def _display_parallel(images):
+    """
+    Display a list of images all at once
+    """
+    for i,img in enumerate(images):
+        cv2.imshow('img{}'.format(i+1), img)
+    cv2.waitKey(0); cv2.destroyAllWindows()
+
 #Test cases
 
 def _test_filter_bg(images):
@@ -53,18 +78,34 @@ def _test_create_stack(images):
     Test create_stack from image filtering
     """
     for image in images:
-        cv2.imshow('img', image); cv2.waitKey(0); cv2.destroyAllWindows()
+        return
+
+def _test_stack_subimages(images):
+    """
+    Test stack_subimages from image filtering
+    """
+    for image in images:
+        cv2.imshow('image', image)
+        #Get the bounds of each stack
         stack_bounds = image_filtering.find_stacks(image).values()
-        stacks = [image[y:y + h, x:x + w] for x, y, w, h in stack_bounds]
-        # Filter the smaller images
-        for i, stack in enumerate(stacks):
-            # Remove the background
-            stack_mask = image_filtering.filter_bg(stack, lower_clr=np.array([18, 0, 0]))
-            stacks[i] = cv2.bitwise_and(stack, stack, mask=stack_mask)
+
+        #Get stack subimages and scale up
+        stacks = image_filtering.stack_subimages(image, stack_bounds)
+        stacks = [image_filtering.scale_image(stack, 2) for stack in stacks]
+        # stacks.insert(0, image)
+
         for stack in stacks:
-            cv2.imshow('stack', stack); cv2.waitKey(0); cv2.destroyAllWindows()
-            if stack.shape[0] * stack.shape[1] > 100:
-                image_filtering.get_game_stack(stack)
+            cv2.imshow('stack', stack); cv2.waitKey(0)
+
+def _test_unique_colors(image):
+    """
+    Test the unique colors function from image filtering
+    """
+    _display_single_image(image)
+    stack_bounds = image_filtering.find_stacks(image)
+    stacks = image_filtering.stack_subimages(image, stack_bounds)
+
+
 
 #Main Program
 
@@ -80,4 +121,5 @@ if __name__ == '__main__':
     #Run tests
     # _show_images_before_after(orig, _test_filter_bg(images))  #Seems to be filtering red and orange out more
     # _show_images_before_after(orig, _test_find_stacks(images))  #Finds stacks properly
-    _show_images_before_after(orig, _test_create_stack(images))  #Find the colors in the stack
+    # _show_images_before_after(orig, _test_create_stack(images))  #Find the colors in the stack
+    _test_stack_subimages(images)

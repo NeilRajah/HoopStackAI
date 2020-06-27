@@ -24,7 +24,7 @@ def filter_bg(img, lower_clr=None):
     """
     # Convert to HSV
     if lower_clr is None:
-        lower_clr = np.array([16, 0, 10])
+        lower_clr = np.array([15, 0, 10])
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Filter out the background color
@@ -55,6 +55,7 @@ def find_stacks(img, show=False):
         stacks[STACK_LABELS[idx]] = r
         idx += 1
 
+    #Show the stacks
     if show:
         for x,y,w,h in rects:
             orig = cv2.rectangle(orig, (x,y), (x+w,y+h), 255, 3)
@@ -65,33 +66,39 @@ def find_stacks(img, show=False):
     #Return the rectangles bounding each stack
     return stacks
 
-def game_from_browser(filename, display_image=False):
+def stack_subimages(image, stack_bounds):
+    """
+    Create the subimages of a stack given an image
+    """
+    stacks = [image[y:y + h, x:x + w] for x, y, w, h in stack_bounds]
+    # for stack in stacks:
+    #     cv2.imshow('stack', scale_image(stack, 2))
+    #     cv2.waitKey(0)
+
+    # Filter the smaller images
+    for i, stack in enumerate(stacks):
+        # Remove the background
+        stack_mask = filter_bg(stack, lower_clr=np.array([18, 0, 0]))  # H below 18 starts to get the holder
+        stacks[i] = cv2.bitwise_and(stack, stack, mask=stack_mask)
+    return stacks
+
+def game_from_browser(filename):
     """
     Create the game from an image from the browser
     """
     #Get the image and scale it
     img = cv2.imread(filename, cv2.IMREAD_COLOR)
-    img = scale_image(img, 1); orig = img
+    img = scale_image(img, 0.5)
+    orig = img
 
-    #Show the image
-    if display_image:
-        cv2.imshow('browser_game', img)
-        cv2.waitKey(0); cv2.destroyAllWindows()
+    #Image to filter to remove the background
+    stack_bg = img
+    win_name = 'filtering'
+    # contours, hierarchy = cv2.findContours(stack_bg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # contours = np.array(contours).reshape((-1,1,2)).astype(np.int32)
+    # cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
 
-    #Get the bounds of each stack
-    stack_bounds = find_stacks(img)
-
-    #Create smaller images for each stack
-    stacks = [scale_image(img[y:y+h, x:x+w], 1) for x,y,w,h in stack_bounds.values()]
-
-    #Filter the smaller images
-    for i,stack in enumerate(stacks):
-        #Remove the background
-        stack_mask = filter_bg(stack, lower_clr=np.array([18,0,0]))  #H below 18 starts to get the holder
-        stacks[i] = cv2.bitwise_and(stack, stack, mask=stack_mask)
-        # cv2.imshow('stack', stacks[i]); cv2.waitKey(0)
-    game_stacks = [get_game_stack(stack) for stack in stacks]
-
+    cv2.imshow('original', orig); cv2.imshow('stack_bg', stack_bg)
     cv2.waitKey(0); cv2.destroyAllWindows()
 
 def get_game_stack(stack):
@@ -129,6 +136,13 @@ def get_game_stack(stack):
 
     cv2.waitKey(0); cv2.destroyAllWindows()
 
+def unique_colors(stack):
+    """
+    Get the unique colors in an image
+    """
+    uniques = np.unique(stack, axis=0)
+    print(uniques)
+
 def _split_list(lst, n):
     """
     Split the list lst into n-sized chunks
@@ -144,4 +158,4 @@ def _avg(lst):
     return sum(lst) / len(lst)
 
 if __name__ == '__main__':
-    game_from_browser('lvl1.png', display_image=False)
+    game_from_browser('lvl2.png')
