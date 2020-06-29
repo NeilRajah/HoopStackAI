@@ -11,7 +11,7 @@ from os import listdir
 
 def window():
     #Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl6.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl7.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
 
@@ -96,7 +96,7 @@ def get_click_locations(stack_bounds):
     """
     Return the click locations for each stack
     """
-    STACK_LABELS = 'ABCDEFGH'; stacks = dict()
+    STACK_LABELS = 'ABCDEFGHIJ'; stacks = dict()
     for i, r in enumerate(stack_bounds):
         x,y,w,h = r
         stacks[STACK_LABELS[i]] = (x+w//2, y+h//2)
@@ -116,24 +116,14 @@ def get_game_stack(stack_image):
     Get the game version of a stack from an image of one
     """
     orig = deepcopy(stack_image)
+    filtered = stack_image
+    for i in range(5):
+        a = 9; b = 75
+        filtered = cv2.bilateralFilter(filtered, a, b, b)
 
-    #Filter out the background and erode it to separate the hoops
-    mask = filter_bg(stack_image, lower=[0,0,248], upper=[255,255,255], e=0)
-    e = 4; mask = cv2.erode(mask, np.ones((e,e), np.uint8))
-
-    stack_image = cv2.bitwise_and(stack_image, stack_image, mask=mask)
-    stack_image = cv2.medianBlur(stack_image, 3)
-
-    #Find each hoop
-    contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(orig, contours, -1, 255, 2)
-    orig = cv2.putText(orig, str(len(contours)), (10, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-
-    cv2.imshow('no_bg', stack_image)
+    cv2.imshow('hoops', filtered)
     cv2.imshow('orig', orig)
     cv2.waitKey(0); cv2.destroyAllWindows()
-
-    return len(contours)  #change to model game
 
 #--------------Tests--------------#
 
@@ -223,8 +213,8 @@ DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
 
 # window()
-# _test_background_filtering(images)
-# _test_find_stacks(images)
-# _test_click_locations(images)
-# _test_stack_images(images)
-_test_game_stacks(images)
+# _test_background_filtering(deepcopy(images))
+# _test_find_stacks(deepcopy(images))
+# _test_click_locations(deepcopy(images))
+# _test_stack_images(deepcopy(images))
+_test_game_stacks(deepcopy(images))
