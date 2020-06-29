@@ -9,7 +9,7 @@ import numpy as np
 from image_filtering import *
 from os import listdir
 
-def window():
+def thresholding_window():
     #Create the image and convert it to HSV
     img = cv2.imread('tests//lvl7.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
@@ -70,6 +70,70 @@ def window():
         img = cv2.bitwise_and(orig, orig, mask=mask)
 
         cv2.imshow('filtered', img)
+
+def color_window():
+    """
+    Window for tuning colors out in images
+    """
+    # Create the image and convert it to HSV
+    img = cv2.imread('tests//lvl3.png', cv2.IMREAD_COLOR)
+    img = scale_image(img, 0.5)
+    orig = deepcopy(img)
+    cv2.imshow('orig', orig); cv2.waitKey(0)
+
+    # Set up the window
+    win_name = 'color_gui'
+    cv2.namedWindow(win_name)
+
+    # Trackbars (name, min, max, [start value])
+    trackbars = [
+        ['H Value', 0, 255],
+        ['Tolerance (+/-)', 0, 10]
+    ]
+    trackbar_names = [trackbar[0] for trackbar in trackbars]  # Just the names
+
+    # Add the trackbars to the window
+    for trackbar in trackbars:
+        def nothing(x): pass
+        cv2.createTrackbar(trackbar[0], win_name, trackbar[1], trackbar[2], nothing)
+        if len(trackbar) > 3: cv2.setTrackbarPos(trackbar[0], win_name, trackbar[3])  #Set an initial value
+
+    values = "don\'t press p when window starts".split()
+    while 1:
+        k = cv2.waitKey(10) & 0xFF
+        if k == 27:
+            break
+
+        # Print the HSV boundaries as python variables if p is pressed
+        elif k == ord('p'):
+            s1 = 'lower_HSV = np.array([{}, {}, {}])'.format(*values[:3])
+            s2 = 'upper_HSV = np.array([{}, {}, {}])'.format(*values[3:6])
+            print("{}\n{}\n".format(s1, s2))
+
+        # Print the HSV boundaries as arguments
+        elif k == ord('a'):
+            print("{}, {}".format(values[:3], values[3:]))
+
+        #Filter out the background
+        mask = filter_bg(orig)
+        img = cv2.bitwise_and(orig, orig, mask=mask)
+
+        #Threshold out the colors
+        values = [cv2.getTrackbarPos(name, win_name) for name in trackbar_names]
+        hue_thresh = values[0]
+        tol = values[1]
+        lower_h = max(hue_thresh - tol, 0)
+        upper_h = min(hue_thresh + tol, 255)
+
+        mask2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        mask2 = cv2.inRange(mask2, (lower_h, 0, 0), (upper_h, 255, 255))
+        img = cv2.bitwise_and(img, img, mask=mask2)
+
+        #Morph close 
+
+        cv2.imshow('filtered', img)
+
+#--------------Functions--------------#
 
 def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=14):
     """
@@ -212,9 +276,10 @@ Findings
 DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
 
-# window()
+# thresholding_window()
+color_window()
 # _test_background_filtering(deepcopy(images))
 # _test_find_stacks(deepcopy(images))
 # _test_click_locations(deepcopy(images))
 # _test_stack_images(deepcopy(images))
-_test_game_stacks(deepcopy(images))
+# _test_game_stacks(deepcopy(images))
