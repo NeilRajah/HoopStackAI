@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from image_filtering import *
 from os import listdir
+import matplotlib.pyplot as plt
 
 def thresholding_window():
     #Create the image and convert it to HSV
@@ -208,50 +209,33 @@ def get_stack_images(image):
 #HAVE TO CHANGE TO USING ENTIRE GAME IMAGE TO BE ABLE TO LABEL, THIS IS POC
 #Consistently splits green hoops into two pieces
 #Not creating one contour per hoop consistently
-def get_game_stack(stack_image):
+def get_game_stack(stack):
     """
     Get the game version of a stack from an image of one
     """
-    orig = deepcopy(stack_image)
+    orig = deepcopy(stack)
 
-    # Filter out the background
-    mask = filter_bg(orig)
-    img = cv2.bitwise_and(orig, orig, mask=mask)
+    # Filter out background
+    mask = filter_bg(stack, lower=(18, 0, 0), e=3)
+    stack = cv2.bitwise_and(stack, stack, mask=mask)
+    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+    # c = 8
+    # stack = cv2.morphologyEx(stack, cv2.MORPH_CLOSE, np.ones((c,c), np.uint8))
+    avgs = []
+    for y in range(stack.shape[0]):
+        sum_h = 0
+        count = 0
+        for x in range(stack.shape[1]):
+            px = stack[y, x]
+            if px[0] != 0:
+                sum_h += px[0]
+                count += 1
+        if sum_h > 0:
+            avgs.append(sum_h // count)
 
-    # Threshold out blue
-    hue_thresh = 95
-    tol = 5
-    lower_h = max(hue_thresh - tol, 0)
-    upper_h = min(hue_thresh + tol, 255)
-
-    mask2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mask2 = cv2.inRange(mask2, (lower_h, 0, 0), (upper_h, 255, 255))
-    img = cv2.bitwise_and(img, img, mask=mask2)
-
-    # Morphological transformation
-    c = 2
-    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((c, c), np.uint8))
-    cv2.imshow('morphed', scale_image(img, 3))
-
-    # Canny edge detection
-    low_canny = 3
-    high_canny = 50
-    if low_canny != 0 and high_canny != 0:
-        img = cv2.Canny(img, low_canny, high_canny)
-    cv2.imshow('canny', scale_image(img, 3))
-
-    #Find the contours
-    contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    for c in contours:
-        cnt_img = deepcopy(orig)
-        cv2.drawContours(cnt_img, [c], -1, (0,0,255), 2)
-        cv2.imshow('contours_img', cnt_img); cv2.waitKey(0)
-    areas = [cv2.contourArea(c) for c in contours]
-    print(areas)
-
-    # cv2.imshow('hoops', img)
-    # cv2.imshow('orig', orig)
-    cv2.waitKey(0); cv2.destroyAllWindows()
+    #Show plot and stack
+    cv2.imshow('stack', stack)
+    plt.plot(avgs, scaley='hue'); plt.show()
 
 #--------------Tests--------------#
 
@@ -317,16 +301,13 @@ def _test_game_stacks(images):
     """
     Create the model game stacks and print them
     """
-    for image in images:
-        cv2.imshow('image', image)
-
-        #Get the images of each stack
-        stack_images = get_stack_images(image)
-
-        #Print the game's version of the stack given the image
-        for stack_image in stack_images:
-            # stack_image = scale_image(stack_image, 3)
-            get_game_stack(stack_image)
+    image = images[3]  #[5] has orange
+    cv2.imshow('full', image)
+    stacks = get_stack_images(image)
+    for i,stack in enumerate(stacks):
+        # cv2.imshow('stack{}'.format(i), stack)
+        get_game_stack(stack)
+    cv2.waitKey(0)
 
 """
 Findings
@@ -341,9 +322,9 @@ DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
 
 # thresholding_window()
-color_window()
+# color_window()
 # _test_background_filtering(deepcopy(images))
 # _test_find_stacks(deepcopy(images))
 # _test_click_locations(deepcopy(images))
 # _test_stack_images(deepcopy(images))
-# _test_game_stacks(deepcopy(images))
+_test_game_stacks(deepcopy(images))
