@@ -213,29 +213,30 @@ def get_game_stack(stack):
     """
     Get the game version of a stack from an image of one
     """
+    #Make copy of original for showing later
     orig = deepcopy(stack)
 
-    # Filter out background
-    mask = filter_bg(stack, lower=(18, 0, 0), e=3)
+    #Filter the image
+    #Filter out background
+    mask = filter_bg(stack, lower=(18,0,0), e=7)
     stack = cv2.bitwise_and(stack, stack, mask=mask)
-    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-    # c = 8
-    # stack = cv2.morphologyEx(stack, cv2.MORPH_CLOSE, np.ones((c,c), np.uint8))
-    avgs = []
-    for y in range(stack.shape[0]):
-        sum_h = 0
-        count = 0
-        for x in range(stack.shape[1]):
-            px = stack[y, x]
-            if px[0] != 0:
-                sum_h += px[0]
-                count += 1
-        if sum_h > 0:
-            avgs.append(sum_h // count)
 
-    #Show plot and stack
+    #Get rid of any residual pieces
+    o = 5
+    stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
+
+    #Check if black
+    print(cv2.countNonZero(cv2.cvtColor(stack, cv2.COLOR_BGR2GRAY)))
+
+    #Isolate a color
+    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+    hue = 90; tol = 10
+    stack = cv2.inRange(stack, np.array([hue-tol,0,0]), np.array([hue+tol,0,0]))
+
+    #Show results
+    cv2.imshow('original', orig)
     cv2.imshow('stack', stack)
-    plt.plot(avgs, scaley='hue'); plt.show()
+    cv2.waitKey(0)
 
 #--------------Tests--------------#
 
@@ -304,10 +305,9 @@ def _test_game_stacks(images):
     image = images[3]  #[5] has orange
     cv2.imshow('full', image)
     stacks = get_stack_images(image)
+    print('There are {} stacks'.format(len(stacks)))
     for i,stack in enumerate(stacks):
-        # cv2.imshow('stack{}'.format(i), stack)
         get_game_stack(stack)
-    cv2.waitKey(0)
 
 """
 Findings

@@ -237,11 +237,11 @@ def _play_hardcoded_game():
     _play_game(game, stack_locations6)
 
 if __name__ == '__main__':
-    # print('hey')
+    print('hey')
     # _get_click_locations()  #For hard-coded stack locations
     # _take_screenshots()  #For collecting test data
 
-    _play_hardcoded_game()
+    # _play_hardcoded_game()
 
     #For files
     # file = 'stacks.png'
