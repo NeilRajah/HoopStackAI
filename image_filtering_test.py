@@ -76,10 +76,10 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl3.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
-    cv2.imshow('orig', orig); cv2.waitKey(0)
+    cv2.imshow('orig', orig)
 
     # Set up the window
     win_name = 'color_gui'
@@ -87,8 +87,14 @@ def color_window():
 
     # Trackbars (name, min, max, [start value])
     trackbars = [
-        ['H Value', 0, 255],
-        ['Tolerance (+/-)', 0, 10]
+        ['H Value', 0, 255, 95],
+        ['Tolerance (+/-)', 0, 10, 5],
+        ['Open', 1, 15, 2],
+        ['Canny Low', 0, 500, 3],
+        ['Canny High', 0, 500, 500],
+        ['Blur', 1, 100, 1],
+        ['Alpha', 0, 1000],
+        ['Beta', 0, 1000]
     ]
     trackbar_names = [trackbar[0] for trackbar in trackbars]  # Just the names
 
@@ -100,7 +106,7 @@ def color_window():
 
     values = "don\'t press p when window starts".split()
     while 1:
-        k = cv2.waitKey(10) & 0xFF
+        k = cv2.waitKey(50) & 0xFF
         if k == 27:
             break
 
@@ -129,11 +135,38 @@ def color_window():
         mask2 = cv2.inRange(mask2, (lower_h, 0, 0), (upper_h, 255, 255))
         img = cv2.bitwise_and(img, img, mask=mask2)
 
-        #Morph close 
+        #Morphological transformation
+        m = values[2]
+        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((m,m), np.uint8))
+
+        #Blurring
+        b = values[5]
+        if b > 0:
+            img = cv2.blur(img, (b, b))
+
+        #Change brightness and contrast
+        # alpha = values[6] / 1000; beta = values[7] / 1000
+        # img = contrast_brightness(img, alpha, beta)
+
+        #Canny edge detection
+        low_canny = values[3]; high_canny = values[4]
+        if low_canny != 0 and high_canny != 0:
+            img = cv2.Canny(img, low_canny, high_canny, L2gradient=True)
 
         cv2.imshow('filtered', img)
 
 #--------------Functions--------------#
+
+def contrast_brightness(image, alpha, beta):
+    """
+    Change the contrast and brightness of an image
+    """
+    new_image = np.zeros(image.shape, image.dtype)
+    for y in range(image.shape[0]):
+        for x in range(image.shape[1]):
+            for c in range(image.shape[2]):
+                new_image[y,x,c] = np.clip(alpha*image[y,x,c] + beta, 0, 255)
+    return new_image
 
 def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=14):
     """
@@ -180,13 +213,44 @@ def get_game_stack(stack_image):
     Get the game version of a stack from an image of one
     """
     orig = deepcopy(stack_image)
-    filtered = stack_image
-    for i in range(5):
-        a = 9; b = 75
-        filtered = cv2.bilateralFilter(filtered, a, b, b)
 
-    cv2.imshow('hoops', filtered)
-    cv2.imshow('orig', orig)
+    # Filter out the background
+    mask = filter_bg(orig)
+    img = cv2.bitwise_and(orig, orig, mask=mask)
+
+    # Threshold out blue
+    hue_thresh = 95
+    tol = 5
+    lower_h = max(hue_thresh - tol, 0)
+    upper_h = min(hue_thresh + tol, 255)
+
+    mask2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask2 = cv2.inRange(mask2, (lower_h, 0, 0), (upper_h, 255, 255))
+    img = cv2.bitwise_and(img, img, mask=mask2)
+
+    # Morphological transformation
+    c = 2
+    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((c, c), np.uint8))
+    cv2.imshow('morphed', scale_image(img, 3))
+
+    # Canny edge detection
+    low_canny = 3
+    high_canny = 50
+    if low_canny != 0 and high_canny != 0:
+        img = cv2.Canny(img, low_canny, high_canny)
+    cv2.imshow('canny', scale_image(img, 3))
+
+    #Find the contours
+    contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        cnt_img = deepcopy(orig)
+        cv2.drawContours(cnt_img, [c], -1, (0,0,255), 2)
+        cv2.imshow('contours_img', cnt_img); cv2.waitKey(0)
+    areas = [cv2.contourArea(c) for c in contours]
+    print(areas)
+
+    # cv2.imshow('hoops', img)
+    # cv2.imshow('orig', orig)
     cv2.waitKey(0); cv2.destroyAllWindows()
 
 #--------------Tests--------------#
@@ -261,7 +325,7 @@ def _test_game_stacks(images):
 
         #Print the game's version of the stack given the image
         for stack_image in stack_images:
-            stack_image = scale_image(stack_image, 3)
+            # stack_image = scale_image(stack_image, 3)
             get_game_stack(stack_image)
 
 """
