@@ -368,16 +368,18 @@ def thresh_blue(img):
     #Filter out bad contours
     i = 0
     while i < len(contours):
-        area = -cv2.contourArea(contours[i], True)  #Positive contours are black
+        area = -cv2.contourArea(contours[i], True)
         logging.debug('area is {}\n'.format(area))
+
         if abs(area) < 100:  #Small area
             contours.pop(i)
             logging.debug('removed contour because of small area')
             continue
 
-        if area < 0:  #Black contour:
+        if area < 0:  #Black contour
             contours.pop(i)
             logging.debug('removed contour because only black pixels')
+            continue
         i += 1
 
     logging.debug('There are {} contours after filtering'.format(len(contours)))
@@ -391,8 +393,9 @@ def thresh_blue(img):
         y = [cv2.boundingRect(c)[1] for c in contours]
         logging.debug('y values are {}'.format(y))
 
+        #Show each individual contour
         for i, c in enumerate(contours):
-            cont_img = cv2.drawContours(deepcopy(img), [c], -1, (0, 0, 255), 2)
+            cont_img = cv2.drawContours(deepcopy(orig), [c], -1, (0, 0, 255), 2)
             cv2.imshow('contour{}'.format(i), scale_image(cont_img, 2))
             cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -500,14 +503,15 @@ def _test_unique_colors(images):
     for i,stack in enumerate(stacks):
         unique_colors(stack)
 
-def _test_thresh_blue():
+def _test_thresh_blue(images):
     """
     Test the functionality of thresholding colors out
     """
-    image = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
-    stacks = get_stack_images(image)
-    for i,stack in enumerate(stacks):
-        thresh_blue(stack)
+    # image = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
+    for image in images:
+        stacks = get_stack_images(image)
+        for i, stack in enumerate(stacks):
+            thresh_blue(stack)
 """
 Findings
 16,0,0 - 255,255,239 filters out to get individual stacks
@@ -529,4 +533,4 @@ logging.basicConfig(level=logging.DEBUG)
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
 # _test_unique_colors(deepcopy(images))
-_test_thresh_blue()
+_test_thresh_blue(deepcopy(images))
