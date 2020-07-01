@@ -496,7 +496,7 @@ def _test_thresh_blue():
     """
     Test the functionality of thresholding colors out
     """
-    image = cv2.imread('tests//lvl5.png', cv2.IMREAD_COLOR)
+    image = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
     stacks = get_stack_images(image)
     for i,stack in enumerate(stacks):
         thresh_blue(stack)
