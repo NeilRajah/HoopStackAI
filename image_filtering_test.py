@@ -78,7 +78,7 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
     cv2.imshow('orig', orig)
@@ -214,6 +214,15 @@ def get_game_stack(stack):
     """
     Get the game version of a stack from an image of one
     """
+    COLORS = {
+        'CYAN': (90, 5, 5),
+        'PINK': (146, 3, 5),  #doesn't work with multiple stacked on top
+        'RED': (179, 2, 1),
+        'PURPLE': (140, 5, 5),
+        'GREEN': (60, 5, 5),
+        'ORANGE': (21, 3, 5),
+    }
+
     #Make copy of original for showing later
     orig = deepcopy(stack)
 
@@ -222,8 +231,10 @@ def get_game_stack(stack):
     mask = filter_bg(stack, lower=(18,0,0), e=7)
     stack = cv2.bitwise_and(stack, stack, mask=mask)
 
+    des_color = 'CYAN'
+
     #Get rid of any residual pieces
-    o = 5
+    o = COLORS[des_color][2]
     stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
 
     #Check if black
@@ -232,9 +243,9 @@ def get_game_stack(stack):
     #Isolate a color
     #Represent each color by its Hue and Tolerance
     stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-    hue = 90; tol = 5
+    hue = COLORS[des_color][0]; tol = COLORS[des_color][1]
     stack = cv2.inRange(stack, np.array([hue-tol,0,0]), np.array([hue+tol,255,255]))
-    o = 3
+    o = COLORS[des_color][2]
     stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
 
     # Get contours
@@ -242,25 +253,69 @@ def get_game_stack(stack):
     cont_mask = stack
     logging.debug('{} contours'.format(len(contours)))
 
-    #impose color back onto the stack image
+    #Impose color back onto the stack image and normalize to one color
     stack = cv2.bitwise_and(orig, orig, mask=stack)
     stack = k_means(stack, 1)
 
-    #Draw contours onto the original image
-    orig = cv2.drawContours(orig, contours, -1, (0, 255, 0), 3)
-
-    for c in contours:
-        cont_img = np.zeros_like(stack)
-        cv2.drawContours(cont_img, [c], -1, 255, -1)
-        pts = np.where(cont_img == 255)  #Pixels that are from the contours
     if len(contours) > 0:
-        print(cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)[pts[0], pts[1]])
+        #Draw contours onto the original image
+        orig = cv2.drawContours(orig, contours, -1, (0, 255, 0), 3)
+
+        for c in contours:
+            #Get the pixels on the original image within the contours
+            cont_img = np.zeros_like(stack)
+            cv2.drawContours(cont_img, [c], -1, 255, -1)
+            pts = np.where(cont_img == 255)  # Pixels that are from the contours
+            y = cv2.boundingRect(c)[1]
+
+            #Print the unique HSV values from the contours
+            hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+            color = np.unique(hsv[pts[0], pts[1]])
+            print('{} found at {}'.format(color, y))
+    else:
+        logging.debug('no hoops in stack')
 
     #Show results
-    # cv2.imshow('contour image', cont_img)
     cv2.imshow('original', orig)
     cv2.imshow('stack', scale_image(stack, 3))
     cv2.waitKey(0)
+
+def unique_colors(stack):
+    """
+    Cluster the unique colors in the image of the stack together
+    """
+    # Make copy of original for showing later
+    orig = deepcopy(stack)
+
+    # Filter the image
+    # Filter out background
+    mask = filter_bg(stack, lower=(18, 0, 0), e=2)
+    stack = cv2.bitwise_and(stack, stack, mask=mask)
+    e = 3
+    stack = cv2.erode(stack, np.ones((e,e), np.uint8))
+
+    #Get the unique colors
+    hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+    uniques, freq = np.unique(hsv, return_counts=True)
+    for val, count in zip(uniques, freq):
+        print(val, count)
+    #Remove black
+    # uniques = np.delete(uniques, np.where(uniques == 0))
+
+    #Show the image and the plot
+    cv2.imshow('stack', stack)
+    if len(uniques) > 0:
+        # Values come sorted, black is always first
+        uniques = np.delete(uniques, 0)
+        if len(uniques) > 0: uniques = np.delete(uniques, len(uniques)-1)
+        freq = np.delete(freq, 0)
+        if len(freq) > 0: freq = np.delete(freq, len(freq) - 1)
+
+        # np.flip(uniques, 0)
+        plt.plot(uniques, freq); plt.title = 'Uniques vs. Frequency'
+        plt.show()
+        plt.plot(uniques); plt.title = 'Uniques'
+        plt.show()
 
 def k_means(img, k):
     """
@@ -340,12 +395,22 @@ def _test_game_stacks(images):
     """
     Create the model game stacks and print them
     """
-    image = images[3]  #[5] has orange
+    image = images[6]  #[5] has orange
+    #3 has pink and blue
     cv2.imshow('full', image)
     stacks = get_stack_images(image)
     print('There are {} stacks'.format(len(stacks)))
     for i,stack in enumerate(stacks):
         get_game_stack(stack)
+
+def _test_unique_colors(images):
+    """
+    Test the functionality of unique_colors
+    """
+    image = images[6]
+    stacks = get_stack_images(image)
+    for i,stack in enumerate(stacks):
+        unique_colors(stack)
 
 """
 Findings
@@ -366,4 +431,5 @@ logging.basicConfig(level=logging.DEBUG)
 # _test_find_stacks(deepcopy(images))
 # _test_click_locations(deepcopy(images))
 # _test_stack_images(deepcopy(images))
-_test_game_stacks(deepcopy(images))
+# _test_game_stacks(deepcopy(images))
+_test_unique_colors(deepcopy(images))
