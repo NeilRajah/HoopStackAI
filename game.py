@@ -146,7 +146,7 @@ class Game():
         move_num = []
         t1 = time.time()
 
-        num_loops = 100; loop = 0 #for preventing infinite loops
+        num_loops = 1000; loop = 0 #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 

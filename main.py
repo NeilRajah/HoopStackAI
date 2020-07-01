@@ -245,6 +245,17 @@ game.add_stack([7,2,2,5,5])
 game.add_stack([3,5,5,3])
 game.add_stack([1,6,7,6,7])
 
+#App level 123
+game = Game(4)
+game.add_stack([1,2,2,3])
+game.add_stack([4])
+game.add_stack([5,6,5,6])
+game.add_stack([1,3,1,7])
+game.add_stack([4,4,5,6])
+game.add_stack([4,6,1])
+game.add_stack([5,7,7,2])
+game.add_stack([2,3,3,7])
+
 game.display()
 t1 = time.time()
 game.solve(print_moves=False, debug=True)
