@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from image_filtering import *
 from os import listdir
+import logging
 import matplotlib.pyplot as plt
 
 def thresholding_window():
@@ -226,17 +227,54 @@ def get_game_stack(stack):
     stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
 
     #Check if black
-    print(cv2.countNonZero(cv2.cvtColor(stack, cv2.COLOR_BGR2GRAY)))
+    logging.debug('{} non-black pixels'.format(cv2.countNonZero(cv2.cvtColor(stack, cv2.COLOR_BGR2GRAY))))
 
     #Isolate a color
+    #Represent each color by its Hue and Tolerance
     stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-    hue = 90; tol = 10
-    stack = cv2.inRange(stack, np.array([hue-tol,0,0]), np.array([hue+tol,0,0]))
+    hue = 90; tol = 5
+    stack = cv2.inRange(stack, np.array([hue-tol,0,0]), np.array([hue+tol,255,255]))
+    o = 3
+    stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
+
+    # Get contours
+    contours, _ = cv2.findContours(stack, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cont_mask = stack
+    logging.debug('{} contours'.format(len(contours)))
+
+    #impose color back onto the stack image
+    stack = cv2.bitwise_and(orig, orig, mask=stack)
+    stack = k_means(stack, 1)
+
+    #Draw contours onto the original image
+    orig = cv2.drawContours(orig, contours, -1, (0, 255, 0), 3)
+
+    for c in contours:
+        cont_img = np.zeros_like(stack)
+        cv2.drawContours(cont_img, [c], -1, 255, -1)
+        pts = np.where(cont_img == 255)  #Pixels that are from the contours
+    if len(contours) > 0:
+        print(cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)[pts[0], pts[1]])
 
     #Show results
+    # cv2.imshow('contour image', cont_img)
     cv2.imshow('original', orig)
-    cv2.imshow('stack', stack)
+    cv2.imshow('stack', scale_image(stack, 3))
     cv2.waitKey(0)
+
+def k_means(img, k):
+    """
+    Color quantization on an image using k-means
+    """
+    Z = np.float32(img.reshape((-1, 3)))
+    # define criteria, number of clusters(K) and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    ret, label, center = cv2.kmeans(Z, k+1, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    # Now convert back into uint8, and make original image
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res2 = res.reshape(img.shape)
+    return res2
 
 #--------------Tests--------------#
 
@@ -320,6 +358,7 @@ Findings
 #Get the images
 DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
+logging.basicConfig(level=logging.DEBUG)
 
 # thresholding_window()
 # color_window()
