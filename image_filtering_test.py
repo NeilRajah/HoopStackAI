@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 def thresholding_window():
     #Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
 
@@ -79,7 +79,7 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
     cv2.imshow('orig', orig)
@@ -93,8 +93,8 @@ def color_window():
         ['H Value', 0, 255, 95],
         ['Tolerance (+/-)', 0, 10, 5],
         ['Open', 1, 15, 2],
-        ['Canny Low', 0, 500, 3],
-        ['Canny High', 0, 500, 500],
+        ['Canny Low', 0, 500, 0],
+        ['Canny High', 0, 500, 0],
         ['Blur', 1, 100, 1],
         ['Alpha', 0, 1000],
         ['Beta', 0, 1000]
@@ -342,16 +342,17 @@ def thresh_blue(img):
     orig = deepcopy(img)
 
     #Define blue
-    blue_h = 91
-    blue_tol = 3
-    blue_close = int(5 * s)
+    blue_h = 95
+    blue_tol = 5
+    blue_close = int(3 * s)
 
-    blue_lower = (blue_h - blue_tol, 0, 0)
+    blue_lower = (blue_h - blue_tol, 0, 250)
     blue_upper = (blue_h + blue_tol, 255, 255)
 
     #Filter out blue
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, blue_lower, blue_upper)
+    # mask = cv2.inRange(hsv, (0,0,250), (255,255,255))  #Filter out parts
+    mask = cv2.inRange(hsv, blue_lower, blue_upper) #Filter out just blue
     img = cv2.bitwise_and(img, img, mask=mask)
     # img = cv2.erode(img, np.ones((blue_erode, blue_erode), np.uint8))
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((blue_close, blue_close), np.uint8))
@@ -365,30 +366,34 @@ def thresh_blue(img):
     logging.debug('There are {} contours before filtering'.format(len(contours)))
 
     #Filter out bad contours
-    remove = []
-    for c in contours:
-        area = -cv2.contourArea(c, True)  #Positive contours are black
-        logging.debug('area is {}'.format(area))
-        if area < 100:  #Small area and black
-            remove.append(c)
+    i = 0
+    while i < len(contours):
+        area = -cv2.contourArea(contours[i], True)  #Positive contours are black
+        logging.debug('area is {}\n'.format(area))
+        if abs(area) < 100:  #Small area
+            contours.pop(i)
             logging.debug('removed contour because of small area')
-    subtract_lists(contours, remove)
+            continue
 
-    #Sort the contours based on their y values
-    y = [cv2.boundingRect(c)[1] for c in contours]
-    logging.debug('y values are {}'.format(y))
+        if area < 0:  #Black contour:
+            contours.pop(i)
+            logging.debug('removed contour because only black pixels')
+        i += 1
 
-    def cont_sort_key(c):
-        return cv2.boundingRect(c)[1]
-
-    contours = sorted(contours, key=cont_sort_key)
     logging.debug('There are {} contours after filtering'.format(len(contours)))
 
     #Draw the individual contours
     if len(contours) > 0:
+        # Sort the contours based on their y values
+        def cont_sort_key(c):
+            return cv2.boundingRect(c)[1]
+        contours = sorted(contours, key=cont_sort_key)
+        y = [cv2.boundingRect(c)[1] for c in contours]
+        logging.debug('y values are {}'.format(y))
+
         for i, c in enumerate(contours):
             cont_img = cv2.drawContours(deepcopy(img), [c], -1, (0, 0, 255), 2)
-            cv2.imshow('contour{}'.format(i), cont_img)
+            cv2.imshow('contour{}'.format(i), scale_image(cont_img, 2))
             cv2.waitKey(0)
         cv2.destroyAllWindows()
     else:
@@ -405,7 +410,8 @@ def subtract_lists(a, b):
     Subtract b from a (a - b)
     """
     for x in b:
-        if x in a: a.remove(x)
+        if x in a:
+            a.remove(x)
 
 def is_black(img):
     """
