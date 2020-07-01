@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 def thresholding_window():
     #Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl7.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
 
@@ -23,9 +23,9 @@ def thresholding_window():
 
     # Trackbars (name, min, max, [start value])
     trackbars = [
-        ['Bottom H', 0, 255],
-        ['Bottom S', 0, 255],
-        ['Bottom V', 0, 255, 248],
+        ['Bottom H', 0, 255, 0],
+        ['Bottom S', 0, 255, 0],
+        ['Bottom V', 0, 255, 251],
         ['Top H', 0, 255, 255],
         ['Top S', 0, 255, 255],
         ['Top V', 0, 255, 255],
@@ -67,7 +67,8 @@ def thresholding_window():
         mask = filter_bg(orig, lower=values[:3], upper=values[3:6], e=0)
 
         # mask = cv2.erode(mask, np.ones((values[6], values[6]), np.uint8))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_ERODE, np.ones((values[6], values[6]), np.uint8))
+        # mask = cv2.morphologyEx(mask, cv2.MORPH_ERODE, np.ones((values[6], values[6]), np.uint8))
+        mask = cv2.erode(mask, np.ones((values[6], values[6]), np.uint8))
 
         img = cv2.bitwise_and(orig, orig, mask=mask)
 
@@ -331,6 +332,85 @@ def k_means(img, k):
     res2 = res.reshape(img.shape)
     return res2
 
+def thresh_blue(img):
+    """
+    Threshold out all colors but blue
+    """
+    #Make copy of image for later viewing
+    s = 1
+    img = scale_image(img, s)
+    orig = deepcopy(img)
+
+    #Define blue
+    blue_h = 95
+    blue_tol = 5
+    blue_close = int(10 * s)
+
+    blue_lower = (blue_h - blue_tol, 0, 0)
+    blue_upper = (blue_h + blue_tol, 255, 255)
+
+    #Filter out blue
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, blue_lower, blue_upper)
+    img = cv2.bitwise_and(img, img, mask=mask)
+    # img = cv2.erode(img, np.ones((blue_erode, blue_erode), np.uint8))
+    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((blue_close, blue_close), np.uint8))
+    img = k_means(img, 1)
+
+    #Find the contours
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    cont_mask = cv2.inRange(hsv, blue_lower, blue_upper)
+    contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    logging.debug('There are {} contours'.format(len(contours)))
+
+    #Filter out bad contours
+    remove = []
+    for c in contours:
+        area = -cv2.contourArea(c, True)  #Positive contours are black
+        logging.debug('area is {}'.format(area))
+        if area < 100:  #Small area and black
+            remove.append(c)
+            logging.debug('removed contour because of small area')
+    subtract_lists(contours, remove)
+
+    #Sort the contours based on their y values
+    y = [cv2.boundingRect(c)[1] for c in contours]
+    logging.debug('y values are {}'.format(y))
+
+    def cont_sort_key(c):
+        return cv2.boundingRect(c)[1]
+
+    contours = sorted(contours, key=cont_sort_key)
+
+    #Draw the individual contours
+    if len(contours) > 0:
+        for i, c in enumerate(contours):
+            cont_img = cv2.drawContours(deepcopy(img), [c], -1, (0, 0, 255), 2)
+            cv2.imshow('contour{}'.format(i), cont_img)
+            cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    else:
+        logging.debug('no contours\n')
+
+    #Show before and after
+    cv2.imshow('original', orig)
+    cv2.imshow('filtered', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def subtract_lists(a, b):
+    """
+    Subtract b from a (a - b)
+    """
+    for x in b:
+        if x in a: a.remove(x)
+
+def is_black(img):
+    """
+    Return whether an image is all black or not
+    """
+    return cv2.countNonZero(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)) == 0
+
 #--------------Tests--------------#
 
 def _test_background_filtering(images):
@@ -412,6 +492,14 @@ def _test_unique_colors(images):
     for i,stack in enumerate(stacks):
         unique_colors(stack)
 
+def _test_thresh_blue():
+    """
+    Test the functionality of thresholding colors out
+    """
+    image = cv2.imread('tests//lvl5.png', cv2.IMREAD_COLOR)
+    stacks = get_stack_images(image)
+    for i,stack in enumerate(stacks):
+        thresh_blue(stack)
 """
 Findings
 16,0,0 - 255,255,239 filters out to get individual stacks
@@ -432,4 +520,5 @@ logging.basicConfig(level=logging.DEBUG)
 # _test_click_locations(deepcopy(images))
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
-_test_unique_colors(deepcopy(images))
+# _test_unique_colors(deepcopy(images))
+_test_thresh_blue()
