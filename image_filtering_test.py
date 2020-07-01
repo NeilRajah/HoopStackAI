@@ -342,9 +342,9 @@ def thresh_blue(img):
     orig = deepcopy(img)
 
     #Define blue
-    blue_h = 95
-    blue_tol = 5
-    blue_close = int(10 * s)
+    blue_h = 91
+    blue_tol = 3
+    blue_close = int(5 * s)
 
     blue_lower = (blue_h - blue_tol, 0, 0)
     blue_upper = (blue_h + blue_tol, 255, 255)
@@ -354,14 +354,15 @@ def thresh_blue(img):
     mask = cv2.inRange(hsv, blue_lower, blue_upper)
     img = cv2.bitwise_and(img, img, mask=mask)
     # img = cv2.erode(img, np.ones((blue_erode, blue_erode), np.uint8))
-    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((blue_close, blue_close), np.uint8))
-    img = k_means(img, 1)
+    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((blue_close, blue_close), np.uint8))
+    # img = cv2.erode(img, np.ones((9,9), np.uint8))
+    # img = k_means(img, 1)
 
     #Find the contours
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     cont_mask = cv2.inRange(hsv, blue_lower, blue_upper)
     contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    logging.debug('There are {} contours'.format(len(contours)))
+    logging.debug('There are {} contours before filtering'.format(len(contours)))
 
     #Filter out bad contours
     remove = []
@@ -381,6 +382,7 @@ def thresh_blue(img):
         return cv2.boundingRect(c)[1]
 
     contours = sorted(contours, key=cont_sort_key)
+    logging.debug('There are {} contours after filtering'.format(len(contours)))
 
     #Draw the individual contours
     if len(contours) > 0:
@@ -496,7 +498,7 @@ def _test_thresh_blue():
     """
     Test the functionality of thresholding colors out
     """
-    image = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
+    image = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
     stacks = get_stack_images(image)
     for i,stack in enumerate(stacks):
         thresh_blue(stack)
