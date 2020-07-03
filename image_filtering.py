@@ -200,179 +200,6 @@ def k_means(img, k):
     res2 = res.reshape(img.shape)
     return res2
 
-def thresh_blue(img):
-    """
-    Threshold out all colors but blue
-    """
-    #Make copy of image for later viewing
-    s = 1
-    img = scale_image(img, s)
-    orig = deepcopy(img)
-
-    #Define blue
-    blue_h = 95
-    blue_tol = 5
-    blue_close = int(3 * s)
-    blue_lower = (blue_h - blue_tol, 0, 250)
-    blue_upper = (blue_h + blue_tol, 255, 255)
-
-    #Filter out blue
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, blue_lower, blue_upper) #Filter out just blue
-    img = cv2.bitwise_and(img, img, mask=mask)
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((blue_close, blue_close), np.uint8))
-
-    #Find the contours
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    cont_mask = cv2.inRange(hsv, blue_lower, blue_upper)
-    contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    logging.debug('There are {} contours before filtering'.format(len(contours)))
-
-    #Filter out bad contours
-    contours = filter_out_contours(contours)
-    logging.debug('There are {} contours after filtering'.format(len(contours)))
-
-    if len(contours) > 0:
-        # Sort the contours based on their y values
-        def cont_sort_key(c):
-            return cv2.boundingRect(c)[1]
-        contours = sorted(contours, key=cont_sort_key)
-        y = [cv2.boundingRect(c)[1] for c in contours]
-        logging.debug('y values are {}'.format(y))
-
-        #Show each individual contour
-        for i, c in enumerate(contours):
-            cont_img = cv2.drawContours(deepcopy(orig), [c], -1, (0, 0, 255), 2)
-            cv2.imshow('contour{}'.format(i), scale_image(cont_img, 2))
-            cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        logging.debug('no contours\n')
-
-    #Show before and after
-    cv2.imshow('original', orig)
-    cv2.imshow('filtered', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-def thresh_red(img):
-    """
-    Threshold red hoops out
-    """
-    # Make copy of image for later viewing
-    s = 1
-    img = scale_image(img, s)
-    orig = deepcopy(img)
-
-    #Define red
-    red_h = 176
-    red_tol = 3
-    red_close = int(3 * s)
-    red_lower = (red_h - red_tol, 0, 250)
-    red_upper = (red_h + red_tol, 255, 255)
-
-    #Filter out red
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  #Could pass this into the function
-    mask = cv2.inRange(hsv, red_lower, red_upper)  # Filter out just blue
-    img = cv2.bitwise_and(img, img, mask=mask)
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((red_close, red_close), np.uint8))
-
-    #Find contours
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    cont_mask = cv2.inRange(hsv, red_lower, red_upper)
-    contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    logging.debug('There are {} contours before filtering'.format(len(contours)))
-
-    #Filter out bad contours
-    contours = filter_out_contours(contours)
-    logging.debug('There are {} contours after filtering'.format(len(contours)))
-
-    if len(contours) > 0:
-        # Sort the contours based on their y values
-        def cont_sort_key(c):
-            return cv2.boundingRect(c)[1]
-
-        contours = sorted(contours, key=cont_sort_key)
-        y = [cv2.boundingRect(c)[1] for c in contours]
-        logging.debug('y values are {}'.format(y))
-
-        # Show each individual contour
-        for i, c in enumerate(contours):
-            cont_img = cv2.drawContours(deepcopy(orig), [c], -1, (0, 255, 0), 2)
-            cv2.imshow('contour{}'.format(i), scale_image(cont_img, 2))
-            cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        logging.debug('no contours\n')
-
-    # Show before and after
-    cv2.imshow('original', orig)
-    cv2.imshow('filtered', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-def thresh_green(img):
-    """
-    Threshold out green hoops
-    """
-    # Make copy of image for later viewing
-    s = 1
-    img = scale_image(img, s)
-    orig = deepcopy(img)
-
-    #Define green (H,tol,close)
-    green_h = 63
-    green_tol = 5
-    green_close = int(1 * s)
-    green_lower = (green_h - green_tol, 0, 245)  #V value thresholds out background
-    green_upper = (green_h + green_tol, 255, 255)
-
-    """
-    Turn below into a function
-    Pass in (H, tol, close, v_min) values for the color
-    Return a list of contours for this color
-    """
-    #----------
-    # Filter out green
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # Could pass this into the function
-    mask = cv2.inRange(hsv, green_lower, green_upper)  # Filter out just blue
-    img = cv2.bitwise_and(img, img, mask=mask)
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((green_close, green_close), np.uint8))
-    # img = cv2.erode(img, np.ones((green_close, green_close), np.uint8))
-
-    # Find contours
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    cont_mask = cv2.inRange(hsv, green_lower, green_upper)
-    contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    logging.debug('There are {} contours before filtering'.format(len(contours)))
-    #----------
-
-    # Filter out bad contours
-    contours = filter_out_contours(contours)
-    logging.debug('There are {} contours after filtering'.format(len(contours)))
-
-    # Sort the contours based on their y values
-    if len(contours) > 0:
-        def cont_sort_key(c):
-            return cv2.boundingRect(c)[1]
-
-        contours = sorted(contours, key=cont_sort_key)
-        y = [cv2.boundingRect(c)[1] for c in contours]
-        logging.debug('y values are {}'.format(y))
-    else:
-        logging.debug('no contours\n')
-
-    #Draw the contours onto the original image
-    orig = cv2.drawContours(orig, contours, -1, 255, 2)
-    orig = cv2.putText(orig, str(len(contours)), (10,30), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 1, 255, 2, cv2.LINE_AA)
-
-    # Show before and after
-    cv2.imshow('original', orig)
-    cv2.imshow('filtered', img)
-
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
 def thresh_color(img, img_hsv, clr):
     """
     Return the vertical positions of the contours of the color clr
@@ -440,4 +267,13 @@ def is_black(img):
     """
     return cv2.countNonZero(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)) == 0
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+Colors = {
+    'green': (63, 5, 1, 240),
+    'red': (176, 3, 3, 250),
+    'cyan': (95, 5, 3, 250),
+    'blue': (109, 3, 1, 240),
+    'purple': (144, 4, 1, 241),
+    'pink': (153, 4, 1, 255),
+    'orange': (25, 5, 1, 0)
+}

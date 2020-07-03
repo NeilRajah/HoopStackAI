@@ -77,7 +77,7 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl9.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     orig = deepcopy(img)
@@ -203,68 +203,16 @@ def _test_stack_images(images):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def _test_game_stacks(images):
-    """
-    Create the model game stacks and print them
-    """
-    image = images[6]  #[5] has orange
-    #3 has pink and blue
-    cv2.imshow('full', image)
-    stacks = get_stack_images(image)
-    print('There are {} stacks'.format(len(stacks)))
-    for i,stack in enumerate(stacks):
-        get_game_stack(stack)
-
-def _test_unique_colors(images):
-    """
-    Test the functionality of unique_colors
-    """
-    image = images[6]
-    stacks = get_stack_images(image)
-    for i,stack in enumerate(stacks):
-        unique_colors(stack)
-
-def _test_thresh_blue(images):
-    """
-    Test the functionality of thresholding blue out
-    """
-    for image in images:
-        stacks = get_stack_images(image)
-        for i, stack in enumerate(stacks):
-            thresh_blue(stack)
-
-def _test_thresh_red(images):
-    """
-    Test the functionality of thresholding red out
-    """
-    for image in images:
-        stacks = get_stack_images(image)
-        for i, stack in enumerate(stacks):
-            thresh_red(stack)
-
-def _test_thresh_green(images):
-    """
-    Test the functionality of thresholding green out
-    """
-    for image in images:
-        stacks = get_stack_images(image)
-        for i, stack in enumerate(stacks):
-            thresh_green(stack)
-
-def _test_thresh_color(images):
+def _test_thresh_color(images, files):
     """
     Test thresholding out a specified color
     """
-    colors = {
-        'green': (63, 5, 1, 240),
-        'red': (176, 3, 3, 250),
-        'cyan': (95, 5, 3, 250)
-    }
+    colors = Colors
 
-    for img in images:
+    for img, file in zip(images, files):
         #Show the image
         disp = deepcopy(img)
-        cv2.imshow('img', disp)
+        cv2.imshow(file, disp)
 
         #Get the stack bounds to draw onto the main image
         stack_bounds = get_stack_bounds(img)
@@ -276,24 +224,29 @@ def _test_thresh_color(images):
         for stack_bound, stack in zip(stack_bounds, stacks):
             #Draw the rectangle for the current stack
             disp = deepcopy(img)
-            cv2.imshow('img', draw_rect(disp, stack_bound))
-            # cv2.imshow('stack', img)
+            cv2.imshow(file, draw_rect(disp, stack_bound))
 
             #Convert the current stack image into hsv
             img_hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-            for color in colors:
-                print(color)
-                stack2 = deepcopy(stack)
+            for i,color in enumerate(colors):
                 contours = thresh_color(stack, img_hsv, colors[color])
+
+                #Draw the contours
+                stack2 = deepcopy(stack)
                 cont_img = cv2.drawContours(stack2, contours, -1, (255,255,255), 2)
+
+                #Put the number of contours as text
                 txt = '{}:{}'.format(color, len(contours))
-
                 cv2.putText(stack2, txt, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-                cv2.imshow('cont_img', scale_image(cont_img, 2))
-                cv2.waitKey(0)
-            print(len(contours))
-        cv2.destroyAllWindows()
 
+                #Display the contour information to the screen
+                name = 'cont_img{}'.format(i)
+                cv2.imshow(name, scale_image(cont_img, 2))
+                cv2.moveWindow(name, i * 200, 600)  #THE POWER OF MOVE WINDOW
+
+            #Skip to the next image
+            if cv2.waitKey(0) == ord('1'): break
+        cv2.destroyAllWindows()
 
 """
 Findings
@@ -306,7 +259,7 @@ Findings
 #Get the images
 DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 # thresholding_window()
 # _test_background_filtering(deepcopy(images))
@@ -315,8 +268,5 @@ logging.basicConfig(level=logging.DEBUG)
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
 # _test_unique_colors(deepcopy(images))
-# _test_thresh_blue(deepcopy(images))
-# _test_thresh_red(deepcopy(images))
 # color_window()
-# _test_thresh_green(deepcopy(images))
-_test_thresh_color(deepcopy(images))
+_test_thresh_color(deepcopy(images), listdir(DIR))
