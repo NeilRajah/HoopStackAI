@@ -248,13 +248,22 @@ def _test_thresh_color(images, files):
             if cv2.waitKey(0) == ord('1'): break
         cv2.destroyAllWindows()
 
-"""
-Findings
-16,0,0 - 255,255,239 filters out to get individual stacks
-18,0,0 - 255,137,235 gets rid of holders
-[0, 0, 0], [255, 255, 219] gets rid of shadow and bg, keeps colors (morph transformation after to solidify)
-16,0,0 - 255,255,255 gets rid of bg
-"""
+def _test_get_game_stack(images):
+    """
+    Test creating Game instances from images
+    """
+    for img in images:
+        cv2.imshow('img', img)
+        cv2.waitKey(0)
+
+        stacks = get_stack_images(img)
+        for stack in stacks:
+            cv2.imshow('stack', stack)
+            print(get_game_stack(stack))
+            cv2.waitKey(0)
+        print()
+        cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 #Get the images
 DIR = 'tests//'
@@ -269,4 +278,5 @@ images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in l
 # _test_game_stacks(deepcopy(images))
 # _test_unique_colors(deepcopy(images))
 # color_window()
-_test_thresh_color(deepcopy(images), listdir(DIR))
+# _test_thresh_color(deepcopy(images), listdir(DIR))
+_test_get_game_stack(deepcopy(images))

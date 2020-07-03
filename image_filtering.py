@@ -70,135 +70,52 @@ def get_click_locations(stack_bounds):
         stacks[STACK_LABELS[i]] = (x+w//2, y+h//2)
     return stacks
 
-def get_stack_images(image):
+def get_stack_images(image, bounds=None):
     """
     Return the subimage of each stack in the image
     """
-    return [image[y:y + h, x:x + w] for x, y, w, h in get_stack_bounds(image)]
+    if bounds is None: bounds = get_stack_bounds(image)
+    return [image[y:y + h, x:x + w] for x, y, w, h in bounds]
 
-#HAVE TO CHANGE TO USING ENTIRE GAME IMAGE TO BE ABLE TO LABEL, THIS IS POC
-#Consistently splits green hoops into two pieces
-#Not creating one contour per hoop consistently
-def get_game_stack(stack):
+def game_from_image(img):
     """
-    Get the game version of a stack from an image of one
+    Create a Game object from an image
     """
-    COLORS = {
-        'CYAN': (90, 5, 5),
-        'PINK': (146, 3, 5),  #doesn't work with multiple stacked on top
-        'RED': (179, 2, 1),
-        'PURPLE': (140, 5, 5),
-        'GREEN': (60, 5, 5),
-        'ORANGE': (21, 3, 5),
-    }
+    #Get the bounding box of each stack
+    stack_bounds = get_stack_bounds(img)
 
-    #Make copy of original for showing later
-    orig = deepcopy(stack)
+    #Get the click locations for each stack
+    clicks = get_click_locations(stack_bounds)
 
-    #Filter the image
-    #Filter out background
-    mask = filter_bg(stack, lower=(18,0,0), e=7)
-    stack = cv2.bitwise_and(stack, stack, mask=mask)
+    #Get the image for each stack
+    stacks = get_stack_images(img, stack_bounds)
 
-    des_color = 'CYAN'
+    #Create the Game object and the stacks to it
+    num_pieces = 0
+    game = Game(num_pieces)
+    for stack in stacks:
+        s = get_game_stack(stack)
+        game.add_stack(s)
+        if len(s) > num_pieces: num_pieces = len(s)
+    game.num_pieces = num_pieces
 
-    #Get rid of any residual pieces
-    o = COLORS[des_color][2]
-    stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
+    return game
 
-    #Check if black
-    logging.debug('{} non-black pixels'.format(cv2.countNonZero(cv2.cvtColor(stack, cv2.COLOR_BGR2GRAY))))
-
-    #Isolate a color
-    #Represent each color by its Hue and Tolerance
-    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-    hue = COLORS[des_color][0]; tol = COLORS[des_color][1]
-    stack = cv2.inRange(stack, np.array([hue-tol,0,0]), np.array([hue+tol,255,255]))
-    o = COLORS[des_color][2]
-    stack = cv2.morphologyEx(stack, cv2.MORPH_OPEN, np.ones((o,o), np.uint8))
-
-    # Get contours
-    contours, _ = cv2.findContours(stack, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    cont_mask = stack
-    logging.debug('{} contours'.format(len(contours)))
-
-    #Impose color back onto the stack image and normalize to one color
-    stack = cv2.bitwise_and(orig, orig, mask=stack)
-    stack = k_means(stack, 1)
-
-    if len(contours) > 0:
-        #Draw contours onto the original image
-        orig = cv2.drawContours(orig, contours, -1, (0, 255, 0), 3)
-
-        for c in contours:
-            #Get the pixels on the original image within the contours
-            cont_img = np.zeros_like(stack)
-            cv2.drawContours(cont_img, [c], -1, 255, -1)
-            pts = np.where(cont_img == 255)  # Pixels that are from the contours
-            y = cv2.boundingRect(c)[1]
-
-            #Print the unique HSV values from the contours
-            hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-            color = np.unique(hsv[pts[0], pts[1]])
-            print('{} found at {}'.format(color, y))
-    else:
-        logging.debug('no hoops in stack')
-
-    #Show results
-    cv2.imshow('original', orig)
-    cv2.imshow('stack', scale_image(stack, 3))
-    cv2.waitKey(0)
-
-def unique_colors(stack):
+def get_game_stack(stack_img):
     """
-    Cluster the unique colors in the image of the stack together
+    Create a stack that can be added to a Game object from an image of the stack
     """
-    # Make copy of original for showing later
-    orig = deepcopy(stack)
+    img = stack_img
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    # Filter the image
-    # Filter out background
-    mask = filter_bg(stack, lower=(18, 0, 0), e=2)
-    stack = cv2.bitwise_and(stack, stack, mask=mask)
-    e = 3
-    stack = cv2.erode(stack, np.ones((e,e), np.uint8))
+    stack = []
+    for color in Colors:
+        contours = thresh_color(img, hsv, Colors[color])
+        for contour in contours:
+            stack.append((color, cv2.boundingRect(contour)[1]))  #Color name, y value
 
-    #Get the unique colors
-    hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-    uniques, freq = np.unique(hsv, return_counts=True)
-    for val, count in zip(uniques, freq):
-        print(val, count)
-    #Remove black
-    # uniques = np.delete(uniques, np.where(uniques == 0))
-
-    #Show the image and the plot
-    cv2.imshow('stack', stack)
-    if len(uniques) > 0:
-        # Values come sorted, black is always first
-        uniques = np.delete(uniques, 0)
-        if len(uniques) > 0: uniques = np.delete(uniques, len(uniques)-1)
-        freq = np.delete(freq, 0)
-        if len(freq) > 0: freq = np.delete(freq, len(freq) - 1)
-
-        # np.flip(uniques, 0)
-        plt.plot(uniques, freq); plt.title = 'Uniques vs. Frequency'
-        plt.show()
-        plt.plot(uniques); plt.title = 'Uniques'
-        plt.show()
-
-def k_means(img, k):
-    """
-    Color quantization on an image using k-means
-    """
-    Z = np.float32(img.reshape((-1, 3)))
-    # define criteria, number of clusters(K) and apply kmeans()
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    ret, label, center = cv2.kmeans(Z, k+1, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-    # Now convert back into uint8, and make original image
-    center = np.uint8(center)
-    res = center[label.flatten()]
-    res2 = res.reshape(img.shape)
-    return res2
+    stack = sorted(stack, key=lambda x: x[1], reverse=True)  #Sort by y value
+    return [hoop[0] for hoop in stack]  #Return just the names
 
 def thresh_color(img, img_hsv, clr):
     """

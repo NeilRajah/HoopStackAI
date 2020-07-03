@@ -7,9 +7,11 @@ Play the browser version of Hoop Stack
 import pyautogui as pag
 from game import Game
 from time import sleep
+from time import time
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import image_filtering
 
 def _get_click_locations():
     """
@@ -237,17 +239,16 @@ def _play_hardcoded_game():
     _play_game(game, stack_locations6)
 
 if __name__ == '__main__':
-    print('hey')
-    # _get_click_locations()  #For hard-coded stack locations
-    # _take_screenshots()  #For collecting test data
+    img = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
+    init = time()
+    game = image_filtering.game_from_image(img)
+    print('Create time is {0:0.3f}s'.format(time() - init))
 
-    # _play_hardcoded_game()
+    game.display()
+    init = time()
+    game.solve()
+    print('Solve time is {0:0.3f}s'.format(time() - init))
+    game.display_history()
 
-    #For files
-    # file = 'stacks.png'
-    # x1, y1 = _get_image_file(file)
-    # stacks = _get_stack_locations(file, show_image=True)
-    # game = _create_game_from_image(file, stacks)
-    # #Offset stack position based on where the top left was
-    # for lbl in stacks:
-    #     stacks[lbl] = (x1 + stacks[lbl][0], y1 + stacks[lbl][0])
+    clicks = image_filtering.get_click_locations(image_filtering.get_stack_bounds(img))
+    print(clicks)

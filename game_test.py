@@ -257,9 +257,17 @@ from game import Game
 # game.add_stack([2,3,3,7])
 
 #Test for non-numbers
-game = Game(3)
-game.add_stack(['A'])
-game.add_stack(['A', 'A'])
+# game = Game(3)
+# game.add_stack(['A'])
+# game.add_stack(['A', 'A'])
+
+#App level 124
+game = Game(5)
+game.add_stack([1,2,3])
+game.add_stack([2,1,4,4])
+game.add_stack([4,1,1,])
+game.add_stack([2,4,1,3,3])
+game.add_stack([2,4,3,3,2])
 
 game.display()
 t1 = time.time()

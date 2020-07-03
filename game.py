@@ -74,7 +74,8 @@ class Game():
         """
         Print the game out to the console
         """
-        print('-' * (2*len(self.stacks)))
+        spacer = '-' * (7 * len(self.stacks))
+        print(spacer)
         for i in reversed(range(self.num_pieces)):
             row = ""
             for lbl in self.stacks:
@@ -83,7 +84,7 @@ class Game():
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
-        print('-' * (2*len(self.stacks)))
+        print(spacer)
 
     def display_history(self):
         """
