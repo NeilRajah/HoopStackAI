@@ -329,7 +329,7 @@ def thresh_green(img):
 
     """
     Turn below into a function
-    Pass in (H, tol, close) values for the color
+    Pass in (H, tol, close, v_min) values for the color
     Return a list of contours for this color
     """
     #----------
@@ -369,8 +369,41 @@ def thresh_green(img):
     # Show before and after
     cv2.imshow('original', orig)
     cv2.imshow('filtered', img)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+def thresh_color(img, img_hsv, clr):
+    """
+    Return the vertical positions of the contours of the color clr
+    clr - (Hue, Hue Tolerance, Close Size, V Min)
+    """
+    lowerb = (clr[0] - clr[1], 0, clr[3])
+    upperb = (clr[0] + clr[1], 255, 255)
+    logging.debug('thresh_color: {}, {}'.format(lowerb, upperb))
+
+    mask = cv2.inRange(img_hsv, lowerb, upperb)
+    img = cv2.bitwise_and(img, img, mask=mask)
+
+    #If image is all black, return an empty list (that color isn't present
+    if is_black(img):
+        logging.debug('thresh_color: no {} found in img'.format(clr))
+    # return []
+
+    #Open up the image to remove spots inside
+    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((clr[2], clr[2]), np.uint8))
+
+    #Find contours
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    cont_mask = cv2.inRange(hsv, lowerb, upperb)
+    contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    logging.debug('There are {} contours before filtering'.format(len(contours)))
+
+    #Filter out bad contours
+    contours = filter_out_contours(contours)
+    logging.debug('There are {} contours after filtering'.format(len(contours)))
+
+    return contours
 
 def filter_out_contours(contours):
     """
@@ -379,9 +412,9 @@ def filter_out_contours(contours):
     i = 0
     while i < len(contours):
         area = -cv2.contourArea(contours[i], True)
-        logging.debug('area is {}\n'.format(area))
+        logging.debug('area is {}'.format(area))
 
-        if abs(area) < 100:  # Small area
+        if abs(area) < 180:  # Small area
             contours.pop(i)
             logging.debug('removed contour because of small area')
             continue

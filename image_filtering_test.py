@@ -251,6 +251,50 @@ def _test_thresh_green(images):
         for i, stack in enumerate(stacks):
             thresh_green(stack)
 
+def _test_thresh_color(images):
+    """
+    Test thresholding out a specified color
+    """
+    colors = {
+        'green': (63, 5, 1, 240),
+        'red': (176, 3, 3, 250),
+        'cyan': (95, 5, 3, 250)
+    }
+
+    for img in images:
+        #Show the image
+        disp = deepcopy(img)
+        cv2.imshow('img', disp)
+
+        #Get the stack bounds to draw onto the main image
+        stack_bounds = get_stack_bounds(img)
+
+        #Get all the sub-images for each stack
+        stacks = get_stack_images(img)
+
+        #Loop through all the stacks
+        for stack_bound, stack in zip(stack_bounds, stacks):
+            #Draw the rectangle for the current stack
+            disp = deepcopy(img)
+            cv2.imshow('img', draw_rect(disp, stack_bound))
+            # cv2.imshow('stack', img)
+
+            #Convert the current stack image into hsv
+            img_hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
+            for color in colors:
+                print(color)
+                stack2 = deepcopy(stack)
+                contours = thresh_color(stack, img_hsv, colors[color])
+                cont_img = cv2.drawContours(stack2, contours, -1, (255,255,255), 2)
+                txt = '{}:{}'.format(color, len(contours))
+
+                cv2.putText(stack2, txt, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                cv2.imshow('cont_img', scale_image(cont_img, 2))
+                cv2.waitKey(0)
+            print(len(contours))
+        cv2.destroyAllWindows()
+
+
 """
 Findings
 16,0,0 - 255,255,239 filters out to get individual stacks
@@ -274,4 +318,5 @@ logging.basicConfig(level=logging.DEBUG)
 # _test_thresh_blue(deepcopy(images))
 # _test_thresh_red(deepcopy(images))
 # color_window()
-_test_thresh_green(deepcopy(images))
+# _test_thresh_green(deepcopy(images))
+_test_thresh_color(deepcopy(images))
