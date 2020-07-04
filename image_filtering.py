@@ -88,18 +88,32 @@ def game_from_image(img):
     clicks = get_click_locations(stack_bounds)
 
     #Get the image for each stack
-    stacks = get_stack_images(img, stack_bounds)
+    stack_imgs = get_stack_images(img, stack_bounds)
 
     #Create the Game object and the stacks to it
-    num_pieces = 0
-    game = Game(num_pieces)
-    for stack in stacks:
-        s = get_game_stack(stack)
-        game.add_stack(s)
-        if len(s) > num_pieces: num_pieces = len(s)
-    game.num_pieces = num_pieces
+    game = Game(0)
+    stacks = [get_game_stack(stack_img) for stack_img in stack_imgs]
+    game.add_stacks(stacks)
+    game.num_pieces = calc_num_pieces(stacks)
 
-    return game
+    return game, clicks
+
+def calc_num_pieces(stacks):
+    """
+    Calculate the max number of pieces in the game given the stacks composing it
+    """
+    #Choose a color
+    color = None
+    for stack in stacks:
+        if len(stack) > 0:
+            color = stack[0]
+
+    #Max number of pieces is how many of any color is in all the stacks
+    num_pieces = 0
+    for stack in stacks:
+        for piece in stack:
+            if piece == color: num_pieces += 1
+    return num_pieces
 
 def get_game_stack(stack_img):
     """
@@ -114,7 +128,7 @@ def get_game_stack(stack_img):
         for contour in contours:
             stack.append((color, cv2.boundingRect(contour)[1]))  #Color name, y value
 
-    stack = sorted(stack, key=lambda x: x[1], reverse=True)  #Sort by y value
+    stack = sorted(stack, key=lambda x: x[1], reverse=False)  #Sort by y value
     return [hoop[0] for hoop in stack]  #Return just the names
 
 def thresh_color(img, img_hsv, clr):

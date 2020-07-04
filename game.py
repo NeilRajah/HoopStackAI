@@ -40,12 +40,21 @@ class Game():
         self.label_idx += 1
         return "Stack {} added: {}".format(self.STACK_LABELS[self.label_idx-1], stack)
 
+    def add_stacks(self, stacks):
+        """
+        Add multiple stacks to the game
+        """
+        for stack in stacks:
+            self.add_stack(stack)
+
     def move_pieces(self, pair_tup):
         """
         Move a piece from the top of one stack to the other
         """
         if not self.is_pair_compatible(pair_tup):
-            raise Exception("Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1]))
+            msg = "Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1])
+            msg = msg + "\n{} | {}".format(self.stacks[pair_tup[0]], self.stacks[pair_tup[1]])
+            raise Exception(msg)
         
         #Move from top of the first stack to the second
         a = self.stacks[pair_tup[0]]
@@ -80,7 +89,7 @@ class Game():
             row = ""
             for lbl in self.stacks:
                 if i > len(self.stacks[lbl])-1:
-                    row = row + "  "
+                    row = row + "XXXX "
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
@@ -147,7 +156,7 @@ class Game():
         move_num = []
         t1 = time.time()
 
-        num_loops = 1000; loop = 0  #for preventing infinite loops
+        num_loops = 100000; loop = 0  #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 
@@ -193,7 +202,7 @@ class Game():
             self.display_history()
             self._clean_up_moves(); print()
         print('time to solve: {}s'.format(time.time() - t1))
-        if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
+        # if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         self.display()
         self.display_history()
 
@@ -280,8 +289,9 @@ class Game():
         All elements of a tuple in a String
         """
         elements = ''
-        for tup in group:
+        for i,tup in enumerate(group):
             elements = elements + ''.join(tup) + ' '
+            # if i % 5 == 0: elements = elements + '\n'
         print("{}: {}".format(msg, elements))
 
     def _subtract_lists(self, a, b):

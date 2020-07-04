@@ -207,6 +207,7 @@ def _test_thresh_color(images, files):
     """
     Test thresholding out a specified color
     """
+    images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
     colors = Colors
 
     for img, file in zip(images, files):
@@ -252,6 +253,7 @@ def _test_get_game_stack(images):
     """
     Test creating Game instances from images
     """
+    images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
     for img in images:
         cv2.imshow('img', img)
         cv2.waitKey(0)

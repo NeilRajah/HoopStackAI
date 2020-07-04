@@ -11,15 +11,6 @@ from time import time
 import cv2
 import image_filtering
 
-def _play_game(game, stack_locations):
-    """
-    Create the game to solve
-    """
-    pag.alert('Click OK when ready to begin')
-    sleep(1)
-    for move in game.history:
-        _pair_click(stack_locations, move)
-
 def _pair_click(stack_locations, pair):
     """
     Click between two pairs
@@ -50,12 +41,39 @@ def _take_screenshots():
         if not done:
             pag.alert('Press OK when next level is open')
 
-def _play_game():
+def get_game_bounds():
+    """
+    Get the bounds of the game from the user
+    """
+    pag.alert('Hit ENTER when mouse is at the top left of the stacks bound')
+    x1, y1 = pag.position()
+    pag.alert('Hit ENTER when mouse is at the bottom right of the stacks bound')
+    x2, y2 = pag.position()
+    return x1,y1,x2,y2
+
+def screenshot_game(coords, filename):
+    """
+    Take a screenshot of the game given its coords and the name of the file to write to
+    """
+    sleep(0.25)
+    x1,y1,x2,y2 = coords
+    pag.screenshot(filename, region=(x1, y1, x2-x1, y2-y1))
+
+def play_moves(moves, locations):
+    """
+    Play the game given the moves that need to be done and the location of each stack
+    """
+    sleep(0.5)
+    for move in moves:
+        _pair_click(locations, move)
+
+def play_game():
     """
     Play the game in the browser
 
     PROCESS
     (debugging)
+
     get_game_bounds
         Get the image bounds
             store the x,y point of the top left
@@ -94,20 +112,39 @@ def _play_game():
             Wait 1-2s for the screen to load
 
     Write settings to file when exiting? (ie. image bounds, next button location)
+    Press X to exit
     """
+    #Get the image
+    filename = 'game.png'
+    coords = get_game_bounds()
+    # coords = (1835, 758, 2668, 1480)  #hardcoding
+
+    playing = True
+    while playing:
+        screenshot_game(coords, filename)
+        img = cv2.imread(filename, cv2.IMREAD_COLOR)
+        s = 0.5; scale = 1/s
+        img = image_filtering.scale_image(img, s)
+        # cv2.imshow('img', img); cv2.waitKey(0); cv2.destroyAllWindows()
+
+        # Create the game instance and solve it
+        game, clicks = image_filtering.game_from_image(img)
+        game.display()
+
+        # Calculate the click locations
+        for letter in clicks:
+            cv2.circle(img, clicks[letter], 5, 255, -1)
+            x, y = clicks[letter]
+            clicks[letter] = (int(x*scale + coords[0]), int(y*scale + coords[1]))
+
+        # Play the game
+        game.solve()
+        play_moves(game.history, clicks)
+
+        # Switch to automatic pressing
+        sleep(0.5)
+        ans = pag.confirm('Press OK when ready to play next level, or Cancel to exit')
+        playing = ans == 'OK'
 
 
-if __name__ == '__main__':
-    img = cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR)
-    init = time()
-    game = image_filtering.game_from_image(img)
-    print('Create time is {0:0.3f}s'.format(time() - init))
-
-    game.display()
-    init = time()
-    game.solve()
-    print('Solve time is {0:0.3f}s'.format(time() - init))
-    game.display_history()
-
-    clicks = image_filtering.get_click_locations(image_filtering.get_stack_bounds(img))
-    print(clicks)
+play_game()
