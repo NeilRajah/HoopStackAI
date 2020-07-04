@@ -5,11 +5,10 @@ Created on: 20/06/2020
 Play the browser version of Hoop Stack
 """
 import pyautogui as pag
-from game import Game
 from time import sleep
-from time import time
 import cv2
 import image_filtering
+import os.path
 
 def _pair_click(stack_locations, pair):
     """
@@ -45,11 +44,26 @@ def get_game_bounds():
     """
     Get the bounds of the game from the user
     """
-    pag.alert('Hit ENTER when mouse is at the top left of the stacks bound')
-    x1, y1 = pag.position()
-    pag.alert('Hit ENTER when mouse is at the bottom right of the stacks bound')
-    x2, y2 = pag.position()
-    return x1,y1,x2,y2
+    filename = 'coords.crd'
+    if os.path.isfile(filename):
+        with open(filename, 'r') as file:
+            for line in file:
+                coords = [int(elem) for elem in line.split(' ')]
+        return coords
+
+    else:
+        pag.alert('Hit ENTER when mouse is at the top left of the stacks bound')
+        x1, y1 = pag.position()
+        pag.alert('Hit ENTER when mouse is at the bottom right of the stacks bound')
+        x2, y2 = pag.position()
+        pag.alert('Hit ENTER when mouse is at the Next Level button')
+        s_x, s_y = pag.position()
+
+        # Write to file
+        file = open(filename, 'w')
+        file.write('{} {} {} {} {} {}'.format(x1, y1, x2, y2, s_x, s_y))
+
+    return x1,y1,x2,y2,s_x,s_y
 
 def screenshot_game(coords, filename):
     """
@@ -117,11 +131,12 @@ def play_game():
     #Get the image
     filename = 'game.png'
     coords = get_game_bounds()
-    # coords = (1835, 758, 2668, 1480)  #hardcoding
 
+    pag.alert('Press OK when ready to start')
+    sleep(0.5)
     playing = True
     while playing:
-        screenshot_game(coords, filename)
+        screenshot_game(coords[:4], filename)
         img = cv2.imread(filename, cv2.IMREAD_COLOR)
         s = 0.5; scale = 1/s
         img = image_filtering.scale_image(img, s)
@@ -131,20 +146,24 @@ def play_game():
         game, clicks = image_filtering.game_from_image(img)
         game.display()
 
-        # Calculate the click locations
+        # Calculate the click locations (offset stack locations in image by where image is in screen)
         for letter in clicks:
-            cv2.circle(img, clicks[letter], 5, 255, -1)
+            # cv2.circle(img, clicks[letter], 5, 255, -1)  #Draw circle to image
             x, y = clicks[letter]
             clicks[letter] = (int(x*scale + coords[0]), int(y*scale + coords[1]))
 
         # Play the game
-        game.solve()
+        game.solve(debug=True)
         play_moves(game.history, clicks)
 
         # Switch to automatic pressing
+        sleep(1.75)
+        pag.click(coords[4], coords[5])
         sleep(0.5)
-        ans = pag.confirm('Press OK when ready to play next level, or Cancel to exit')
-        playing = ans == 'OK'
-
 
 play_game()
+"""
+Level 19 does not work (stack incompatible error)
+Level 23 stuck in infinite loop
+Level 24 stacks are not compatible error
+"""

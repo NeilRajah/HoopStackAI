@@ -357,15 +357,27 @@ c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
 # ])
 
 #App level 137
-game = Game(5)
+# game = Game(5)
+# game.add_stacks([
+#     [c,b,b,c,c],
+#     [pi,g,g],
+#     [pu,pu,pi,pi],
+#     [g,c,c,pu,pu],
+#     [b,r,g,g,r],
+#     [pu,pi,b],
+#     [r,b,pi,r,r]
+# ])
+
+#Browser level 19
+game = Game(3)
 game.add_stacks([
-    [c,b,b,c,c],
-    [pi,g,g],
-    [pu,pu,pi,pi],
-    [g,c,c,pu,pu],
-    [b,r,g,g,r],
-    [pu,pi,b],
-    [r,b,pi,r,r]
+    [r,c],
+    [g],
+    [g,c,pi],
+    [r,pi,pu],
+    [g,c,r],
+    [pu,b,b],
+    [pi,b,pu]
 ])
 
 game.display()
