@@ -83,13 +83,17 @@ class Game():
         """
         Print the game out to the console
         """
+        for stack in self.stacks:
+            if len(self.stacks[stack]) > 0:
+                s = self.stacks[stack][0]
+                break
+        blank = '_' * len(s) + ' '
         spacer = '-' * (7 * len(self.stacks))
-        print(spacer)
         for i in reversed(range(self.num_pieces)):
             row = ""
             for lbl in self.stacks:
                 if i > len(self.stacks[lbl])-1:
-                    row = row + "XXXX "
+                    row = row + blank
                 else:
                     row = row + "{} ".format(self.stacks[lbl][i])
             print(row)
@@ -156,7 +160,7 @@ class Game():
         move_num = []
         t1 = time.time()
 
-        num_loops = 100000; loop = 0  #for preventing infinite loops
+        num_loops = 1000; loop = 0  #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 

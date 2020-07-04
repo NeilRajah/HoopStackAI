@@ -39,7 +39,7 @@ def contrast_brightness(image, alpha, beta):
                 new_image[y,x,c] = np.clip(alpha*image[y,x,c] + beta, 0, 255)
     return new_image
 
-def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=14):
+def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=5):
     """
     Filter the background out for an image given lower and upper bounds
     Convert to HSV -> threshold in range -> morphologically close
@@ -47,6 +47,7 @@ def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=14):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     image = cv2.inRange(image, np.array(lower), np.array(upper))
     image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, np.ones((e, e), np.uint8))
+
     return image
 
 def get_stack_bounds(image):
@@ -200,11 +201,11 @@ def is_black(img):
 
 # logging.basicConfig(level=logging.DEBUG)
 Colors = {
-    'green': (63, 5, 1, 240),
-    'red': (176, 3, 3, 250),
+    'gren': (63, 5, 1, 240),
+    'red ': (176, 3, 3, 250),
     'cyan': (95, 5, 3, 250),
     'blue': (109, 3, 1, 240),
-    'purple': (144, 4, 1, 241),
+    'purp': (144, 3, 1, 206),
     'pink': (153, 4, 1, 255),
-    'orange': (25, 5, 1, 0)
+    'orng': (25, 5, 1, 0)
 }

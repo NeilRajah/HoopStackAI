@@ -153,7 +153,7 @@ def play_game():
             clicks[letter] = (int(x*scale + coords[0]), int(y*scale + coords[1]))
 
         # Play the game
-        game.solve(debug=True)
+        game.solve(debug=False)
         play_moves(game.history, clicks)
 
         # Switch to automatic pressing

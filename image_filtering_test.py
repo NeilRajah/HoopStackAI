@@ -77,7 +77,7 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl11.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('game.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     orig = deepcopy(img)
@@ -207,7 +207,6 @@ def _test_thresh_color(images, files):
     """
     Test thresholding out a specified color
     """
-    images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
     colors = Colors
 
     for img, file in zip(images, files):
@@ -253,7 +252,6 @@ def _test_get_game_stack(images):
     """
     Test creating Game instances from images
     """
-    images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
     for img in images:
         cv2.imshow('img', img)
         cv2.waitKey(0)
@@ -271,6 +269,7 @@ def _test_get_game_stack(images):
 DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
 # logging.basicConfig(level=logging.DEBUG)
+images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
 
 # thresholding_window()
 # _test_background_filtering(deepcopy(images))
@@ -279,6 +278,6 @@ images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in l
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
 # _test_unique_colors(deepcopy(images))
-# color_window()
+color_window()
 # _test_thresh_color(deepcopy(images), listdir(DIR))
-_test_get_game_stack(deepcopy(images))
+# _test_get_game_stack(deepcopy(images))
