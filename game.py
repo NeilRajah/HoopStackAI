@@ -193,10 +193,12 @@ class Game():
 
                 self.prev_stacks.append(deepcopy(self.stacks))
                 self.prev_pairs.append(deepcopy(pairs))
-                # print('current and prev', pairs, '|||', self.prev_pairs[-2])
 
-                if self.print_moves: self.move_and_display(pairs[0])
-                else: self.move_pieces(pairs[0])
+                chosen_move = pairs[0]  #Choose the first move (would choose from heuristics)
+                chosen_move = self._fill_efficiently(chosen_move)  #Can switch to heuristics
+
+                if self.print_moves: self.move_and_display(chosen_move)
+                else: self.move_pieces(chosen_move)
 
             loop += 1
             if self.debug: print()
@@ -209,6 +211,15 @@ class Game():
         # if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         self.display()
         self.display_history()
+
+    def _fill_efficiently(self, move):
+        """
+        Fill stacks efficiently by moving from small homogenous stacks to large ones instead of vice versa
+        """
+        if self._is_stack_homog(move[0]) and self._is_stack_homog(move[1]):
+            if len(self.stacks[move[0]]) > len(self.stacks[move[1]]):
+                return move[::-1]  #Flip the move if going from large homog to small homog
+        return move
 
     def _clean_up_moves(self):
         """

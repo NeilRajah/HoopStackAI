@@ -8,10 +8,12 @@ import time
 
 from game import Game
 
+c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
+
 #lvl 1
 # game = Game(3)
-# print(game.add_stack([1]))
-# print(game.add_stack([1, 1]))
+# print(game.add_stack([c]))
+# print(game.add_stack([c,c]))
 
 #lvl 2
 # game = Game(3)
@@ -165,13 +167,13 @@ from game import Game
 # game.add_stack([5, 4, 3, 1, 1])
 
 #lvl 60, inefficient stacking
-# game = Game(3)
-# game.add_stack([1])
-# game.add_stack([2])
-# game.add_stack([3])
-# game.add_stack([2, 1, 4])
-# game.add_stack([4, 3, 1])
-# game.add_stack([2, 4, 3])
+game = Game(3)
+game.add_stack([c])
+game.add_stack([pi])
+game.add_stack([g])
+game.add_stack([pi, c, pu])
+game.add_stack([pu, g, c])
+game.add_stack([pi, pu, g])
 
 #lvl 61, efficient solve
 # game = Game(3)
@@ -280,7 +282,6 @@ from game import Game
 # game.add_stack(['purple', 'red', 'purple', 'cyan', 'cyan'])
 
 #App level 130
-c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
 # game = Game(5)
 # game.add_stacks([
 #     [c],
@@ -369,16 +370,41 @@ c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
 # ])
 
 #Browser level 19
-game = Game(3)
-game.add_stacks([
-    [r,c],
-    [g],
-    [g,c,pi],
-    [r,pi,pu],
-    [g,c,r],
-    [pu,b,b],
-    [pi,b,pu]
-])
+# game = Game(3)
+# game.add_stacks([
+#     [r,c],
+#     [g],
+#     [g,c,pi],
+#     [r,pi,pu],
+#     [g,c,r],
+#     [pu,b,b],
+#     [pi,b,pu]
+# ])
+
+#App level 140
+# game = Game(5)
+# game.add_stacks([
+#     [g,r,b,r,c],
+#     [c,g],
+#     [pu,pi,pu,pi,pi],
+#     [b,pu,pu,b,r],
+#     [c,g,r,r],
+#     [c,c,g,b],
+#     [g,b,pi,pu,pi]
+# ])
+
+#App level 141
+# game = Game(4)
+# game.add_stacks([
+#     [pu,o,c,c],
+#     [o,g,pi,g],
+#     [pu],
+#     [c,pi,g,pu],
+#     [r,g,r,r],
+#     [b,r,b,b],
+#     [pu,o,o],
+#     [c,b,pi,pi]
+# ])
 
 game.display()
 t1 = time.time()

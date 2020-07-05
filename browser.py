@@ -130,9 +130,10 @@ def play_game():
     """
     #Get the image
     filename = 'game.png'
+    ans = pag.confirm('Press OK to start playing, or SET to start setting mouse locations', buttons=['OK', 'SET'])
+    if ans == 'SET': os.remove('coords.crd')
     coords = get_game_bounds()
 
-    pag.alert('Press OK when ready to start')
     sleep(0.5)
     playing = True
     while playing:
@@ -161,9 +162,10 @@ def play_game():
         pag.click(coords[4], coords[5])
         sleep(0.5)
 
+
+"""
+Level 49 stuck in infinite loop
+Level 65 stuck in same infinite loop
+Can play all other levels
+"""
 play_game()
-"""
-Level 19 does not work (stack incompatible error)
-Level 23 stuck in infinite loop
-Level 24 stacks are not compatible error
-"""
