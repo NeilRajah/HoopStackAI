@@ -265,6 +265,15 @@ def _test_get_game_stack(images):
         cv2.destroyAllWindows()
     cv2.destroyAllWindows()
 
+def _test_game_from_image():
+    """
+    Test creating a game from an image
+    """
+    img = cv2.imread('game.png', cv2.IMREAD_COLOR)
+    game, _ = game_from_image(img)
+    game.display()
+
+
 #Get the images
 DIR = 'tests//'
 images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
@@ -277,7 +286,7 @@ images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
 # _test_click_locations(deepcopy(images))
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
-# _test_unique_colors(deepcopy(images))
 # color_window()
 _test_thresh_color(deepcopy(images), listdir(DIR))
 _test_get_game_stack(deepcopy(images))
+_test_game_from_image()

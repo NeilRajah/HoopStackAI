@@ -8,7 +8,7 @@ import time
 
 from game import Game
 
-c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
+c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red'; pi = 'pink'; pu = 'purp'; o = 'orng'
 
 #lvl 1
 # game = Game(3)
@@ -167,13 +167,13 @@ c = '1'; b = '2'; g = '3'; r = '4'; pi = '5'; pu = '6'; o = '7'
 # game.add_stack([5, 4, 3, 1, 1])
 
 #lvl 60, inefficient stacking
-game = Game(3)
-game.add_stack([c])
-game.add_stack([pi])
-game.add_stack([g])
-game.add_stack([pi, c, pu])
-game.add_stack([pu, g, c])
-game.add_stack([pi, pu, g])
+# game = Game(3)
+# game.add_stack([c])
+# game.add_stack([pi])
+# game.add_stack([g])
+# game.add_stack([pi, c, pu])
+# game.add_stack([pu, g, c])
+# game.add_stack([pi, pu, g])
 
 #lvl 61, efficient solve
 # game = Game(3)
@@ -405,6 +405,18 @@ game.add_stack([pi, pu, g])
 #     [pu,o,o],
 #     [c,b,pi,pi]
 # ])
+
+#Level 49
+game = Game(4)
+game.add_stacks([
+    [pu,c,b,pu],
+    [b,c,g,g],
+    [r,pu,pi],
+    [r],
+    [r,pi,pu,c],
+    [r,pi,b,b],
+    [pi,c,g,g]
+])
 
 game.display()
 t1 = time.time()

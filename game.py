@@ -7,6 +7,7 @@ Game class with all interactions
 import time
 from itertools import permutations
 from copy import deepcopy
+import random
 import matplotlib.pyplot as plt
 
 class Game():
@@ -160,7 +161,12 @@ class Game():
         move_num = []
         t1 = time.time()
 
-        num_loops = 1000; loop = 0  #for preventing infinite loops
+        log_file = 'log.txt'
+        open(log_file, 'w').close()
+        file = open(log_file, 'a')
+        file.write('\n')
+
+        num_loops = 10000; loop = 0  #for preventing infinite loops
         while not self._is_solved():
             if loop >= num_loops: print("\nToo many loops"); break
 
@@ -176,7 +182,10 @@ class Game():
                 #Generate all moves and filter out invalid moves
                 pairs = deepcopy(moves)
                 if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
-                
+
+                if self.stacks in self.prev_stacks:
+                    print('back at same spot')
+
                 self._remove_empty_solved(pairs)
                 self._remove_opposite(pairs)
                 self._remove_incompatibles(pairs)
@@ -194,15 +203,23 @@ class Game():
                 self.prev_stacks.append(deepcopy(self.stacks))
                 self.prev_pairs.append(deepcopy(pairs))
 
-                chosen_move = pairs[0]  #Choose the first move (would choose from heuristics)
-                chosen_move = self._fill_efficiently(chosen_move)  #Can switch to heuristics
+                #Choose first move in remaining set
+                chosen_move = pairs[0]
+                # print('{} options, chose {}'.format(len(pairs), index))
+                pairs_str = ''
+                for pair in pairs:
+                    pairs_str = pairs_str + ''.join(pair) + ' '
+
+                chosen_move = self._fill_efficiently(chosen_move)  #Optimize the move if its filling a stack up
+                file.write('{:2d}: {} - {}\n'.format(loop, ''.join(chosen_move), pairs_str))
 
                 if self.print_moves: self.move_and_display(chosen_move)
                 else: self.move_pieces(chosen_move)
 
             loop += 1
             if self.debug: print()
-            
+
+        file.close()
         if self._is_solved():
             print("*******SOLVED******")
             self.display_history()

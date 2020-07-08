@@ -14,7 +14,7 @@ def _pair_click(stack_locations, pair):
     """
     Click between two pairs
     """
-    delay = 0.1
+    delay = 0.2
     moveTime = 0.001
     x, y = stack_locations[pair[0]]; pag.moveTo(x, y, moveTime); pag.click()
     sleep(delay)
@@ -134,7 +134,7 @@ def play_game():
     if ans == 'SET': os.remove('coords.crd')
     coords = get_game_bounds()
 
-    sleep(0.5)
+    sleep(3)
     playing = True
     while playing:
         screenshot_game(coords[:4], filename)
@@ -157,15 +157,13 @@ def play_game():
         game.solve(debug=False)
         play_moves(game.history, clicks)
 
-        # Switch to automatic pressing
+        # Press the next level button
         sleep(1.75)
         pag.click(coords[4], coords[5])
         sleep(0.5)
 
 
 """
-Level 49 stuck in infinite loop
-Level 65 stuck in same infinite loop
-Can play all other levels
+Levels 49 and 65 no longer get stuck
 """
 play_game()

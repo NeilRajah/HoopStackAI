@@ -28,17 +28,6 @@ def scale_image(image, s):
 
 #--------------Functions--------------#
 
-def contrast_brightness(image, alpha, beta):
-    """
-    Change the contrast and brightness of an image
-    """
-    new_image = np.zeros(image.shape, image.dtype)
-    for y in range(image.shape[0]):
-        for x in range(image.shape[1]):
-            for c in range(image.shape[2]):
-                new_image[y,x,c] = np.clip(alpha*image[y,x,c] + beta, 0, 255)
-    return new_image
-
 def filter_bg(image, lower=(16,0,0), upper=(255,255,255), e=5):
     """
     Filter the background out for an image given lower and upper bounds
@@ -59,7 +48,7 @@ def get_stack_bounds(image):
 
     # Get the bounding box for each stack
     contours, _ = cv2.findContours(no_bg, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    return [cv2.boundingRect(c) for c in contours]
+    return [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 5]  #remove erroneous small contours
 
 def get_click_locations(stack_bounds):
     """
@@ -92,10 +81,10 @@ def game_from_image(img):
     stack_imgs = get_stack_images(img, stack_bounds)
 
     #Create the Game object and the stacks to it
-    game = Game(0)
     stacks = [get_game_stack(stack_img) for stack_img in stack_imgs]
+    num_pieces = calc_num_pieces(stacks)
+    game = Game(num_pieces)
     game.add_stacks(stacks)
-    game.num_pieces = calc_num_pieces(stacks)
 
     return game, clicks
 
@@ -129,7 +118,7 @@ def get_game_stack(stack_img):
         for contour in contours:
             stack.append((color, cv2.boundingRect(contour)[1]))  #Color name, y value
 
-    stack = sorted(stack, key=lambda x: x[1], reverse=False)  #Sort by y value
+    stack = sorted(stack, key=lambda x: x[1])  #Sort by y value
     return [hoop[0] for hoop in stack]  #Return just the names
 
 def thresh_color(img, img_hsv, clr):
@@ -139,15 +128,9 @@ def thresh_color(img, img_hsv, clr):
     """
     lowerb = (clr[0] - clr[1], 0, clr[3])
     upperb = (clr[0] + clr[1], 255, 255)
-    logging.debug('thresh_color: {}, {}'.format(lowerb, upperb))
 
     mask = cv2.inRange(img_hsv, lowerb, upperb)
     img = cv2.bitwise_and(img, img, mask=mask)
-
-    #If image is all black, return an empty list (that color isn't present
-    if is_black(img):
-        logging.debug('thresh_color: no {} found in img'.format(clr))
-    # return []
 
     #Open up the image to remove spots inside
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((clr[2], clr[2]), np.uint8))
@@ -156,11 +139,9 @@ def thresh_color(img, img_hsv, clr):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     cont_mask = cv2.inRange(hsv, lowerb, upperb)
     contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    logging.debug('There are {} contours before filtering'.format(len(contours)))
 
     #Filter out bad contours
     contours = filter_out_contours(contours)
-    logging.debug('There are {} contours after filtering'.format(len(contours)))
 
     return contours
 
@@ -171,16 +152,13 @@ def filter_out_contours(contours):
     i = 0
     while i < len(contours):
         area = -cv2.contourArea(contours[i], True)
-        logging.debug('area is {}'.format(area))
 
         if abs(area) < 180:  # Small area
             contours.pop(i)
-            logging.debug('removed contour because of small area')
             continue
 
         if area < 0:  # Black contour
             contours.pop(i)
-            logging.debug('removed contour because only black pixels')
             continue
         i += 1
     return contours
