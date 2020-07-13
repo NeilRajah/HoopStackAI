@@ -134,7 +134,7 @@ def play_game():
     if ans == 'SET': os.remove('coords.crd')
     coords = get_game_bounds()
 
-    sleep(3)
+    sleep(0.5)
     playing = True
     while playing:
         screenshot_game(coords[:4], filename)

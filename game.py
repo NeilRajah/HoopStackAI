@@ -183,9 +183,6 @@ class Game():
                 pairs = deepcopy(moves)
                 if self.debug: self._print_tup(pairs, "{} inital".format(len(self.history))); print()
 
-                if self.stacks in self.prev_stacks:
-                    print('back at same spot')
-
                 self._remove_empty_solved(pairs)
                 self._remove_opposite(pairs)
                 self._remove_incompatibles(pairs)
@@ -205,6 +202,8 @@ class Game():
 
                 #Choose first move in remaining set
                 chosen_move = pairs[0]
+                # random.seed(time.time())
+                # chosen_move = pairs[int(random.random() * len(pairs))]
                 # print('{} options, chose {}'.format(len(pairs), index))
                 pairs_str = ''
                 for pair in pairs:

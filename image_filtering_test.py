@@ -270,8 +270,12 @@ def _test_game_from_image():
     Test creating a game from an image
     """
     img = cv2.imread('game.png', cv2.IMREAD_COLOR)
+    img = scale_image(img, 0.5)
     game, _ = game_from_image(img)
     game.display()
+    [print('{},'.format(x)) for x in game.stacks.values()]
+    # game.solve()
+    # game.display()
 
 
 #Get the images
@@ -287,6 +291,6 @@ images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
 # _test_stack_images(deepcopy(images))
 # _test_game_stacks(deepcopy(images))
 # color_window()
-_test_thresh_color(deepcopy(images), listdir(DIR))
-_test_get_game_stack(deepcopy(images))
+# _test_thresh_color(deepcopy(images), listdir(DIR))
+# _test_get_game_stack(deepcopy(images))
 _test_game_from_image()
