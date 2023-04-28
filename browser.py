@@ -139,13 +139,14 @@ def play_game():
     while playing:
         screenshot_game(coords[:4], filename)
         img = cv2.imread(filename, cv2.IMREAD_COLOR)
-        s = 0.5; scale = 1/s
+        s = 0.5
+        scale = 1/s
         img = image_filtering.scale_image(img, s)
-        # cv2.imshow('img', img); cv2.waitKey(0); cv2.destroyAllWindows()
+        cv2.imshow('img', img); cv2.waitKey(0); cv2.destroyAllWindows()
 
         # Create the game instance and solve it
         game, clicks = image_filtering.game_from_image(img)
-        game.display()
+        # game.display()
 
         # Calculate the click locations (offset stack locations in image by where image is in screen)
         for letter in clicks:
@@ -154,7 +155,7 @@ def play_game():
             clicks[letter] = (int(x*scale + coords[0]), int(y*scale + coords[1]))
 
         # Play the game
-        game.solve(debug=False)
+        game.solve(debug=True)
         play_moves(game.history, clicks)
 
         # Press the next level button

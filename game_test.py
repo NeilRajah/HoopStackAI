@@ -8,7 +8,7 @@ import time
 
 from game import Game
 
-c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red'; pi = 'pink'; pu = 'purp'; o = 'orng'
+c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red '; pi = 'pink'; pu = 'purp'; o = 'orng'
 
 #lvl 1
 # game = Game(3)
@@ -407,32 +407,32 @@ c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red'; pi = 'pink'; pu = 'purp'; o = 'or
 # ])
 
 #Level 49
-# game = Game(4)
-# game.add_stacks([
-#     [pu,c,b,pu],
-#     [b,c,g,g],
-#     [r,pu,pi],
-#     [r],
-#     [r,pi,pu,c],
-#     [r,pi,b,b],
-#     [pi,c,g,g]
-# ])
+game = Game(4)
+game.add_stacks([
+    [pu,c,b,pu],
+    [b,c,g,g],
+    [r,pu,pi],
+    [r],
+    [r,pi,pu,c],
+    [r,pi,b,b],
+    [pi,c,g,g]
+])
 
 #Image created game
-game = Game(4)
-stacks = [
-    ['red '],
-    ['blue', 'blue', 'pink', 'red '],
-    ['gren', 'gren', 'cyan', 'pink'],
-    ['cyan', 'purp', 'pink', 'red '],
-    ['pink', 'purp', 'red '],
-    ['gren', 'gren', 'cyan', 'blue'],
-    ['purp', 'blue', 'cyan', 'purp']
-]
-game.add_stacks([stack[::-1] for stack in stacks])
+# game = Game(4)
+# stacks = [
+#     ['red '],
+#     ['blue', 'blue', 'pink', 'red '],
+#     ['gren', 'gren', 'cyan', 'pink'],
+#     ['cyan', 'purp', 'pink', 'red '],
+#     ['pink', 'purp', 'red '],
+#     ['gren', 'gren', 'cyan', 'blue'],
+#     ['purp', 'blue', 'cyan', 'purp']
+# ]
+# game.add_stacks([stack[::-1] for stack in stacks])
 
 game.display()
 t1 = time.time()
 game.solve(print_moves=False, debug=False)
-[print('{},'.format(x)) for x in game.stacks.values()]
+# [print('{},'.format(x)) for x in game.stacks.values()]
 # game.display_history()

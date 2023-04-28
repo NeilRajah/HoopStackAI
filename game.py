@@ -84,6 +84,8 @@ class Game():
         """
         Print the game out to the console
         """
+        # print(self.stacks)
+        s = ''
         for stack in self.stacks:
             if len(self.stacks[stack]) > 0:
                 s = self.stacks[stack][0]
@@ -174,7 +176,8 @@ class Game():
                 #Undo the last move, reset the pairs to the last set and move forward
                 if self.debug: self._print_tup(pairs, 'pre-backtracking pairs')
                 pairs = self.prev_pairs.pop()
-                if len(self.prev_moves) > 0 and self.prev_moves[-1] in pairs: pairs.remove(self.prev_moves[-1])
+                if len(self.prev_moves) > 0 and self.prev_moves[-1] in pairs:
+                    pairs.remove(self.prev_moves[-1])
                 self._undo()
                 self.backtracking = False
                 if self.debug: print(pairs, 'post-backtracking pairs')
@@ -212,8 +215,10 @@ class Game():
                 chosen_move = self._fill_efficiently(chosen_move)  #Optimize the move if its filling a stack up
                 file.write('{:2d}: {} - {}\n'.format(loop, ''.join(chosen_move), pairs_str))
 
-                if self.print_moves: self.move_and_display(chosen_move)
-                else: self.move_pieces(chosen_move)
+                if self.print_moves:
+                    self.move_and_display(chosen_move)
+                else:
+                    self.move_pieces(chosen_move)
 
             loop += 1
             if self.debug: print()

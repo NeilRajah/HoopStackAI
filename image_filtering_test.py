@@ -11,9 +11,9 @@ from os import listdir
 import logging
 import matplotlib.pyplot as plt
 
-def thresholding_window():
+def thresholding_window(filename):
     #Create the image and convert it to HSV
-    img = cv2.imread('tests//lvl4.png', cv2.IMREAD_COLOR)
+    img = cv2.imread(filename, cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     orig = deepcopy(img)
 
@@ -284,7 +284,7 @@ images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in l
 # logging.basicConfig(level=logging.DEBUG)
 images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
 
-# thresholding_window()
+thresholding_window('game.png')
 # _test_background_filtering(deepcopy(images))
 # _test_find_stacks(deepcopy(images))
 # _test_click_locations(deepcopy(images))
