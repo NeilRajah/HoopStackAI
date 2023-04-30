@@ -145,107 +145,147 @@ def color_window():
 
 #--------------Tests--------------#
 
-def _test_background_filtering(images):
-    """
-    Apply the background filter on each image and display it
-    """
-    for image in images:
-        cv2.imshow('original', image)
-        image = filter_bg(image)
+def hstack_images(original, processed, cvt_to_bgr=True):
+    """Stack two images horizontally
 
-        cv2.imshow('filter_bg', image)
+    @param original: Original pre-processed image (appears on left)
+    @param processed: Post-processed image to be filtered(appears on right)
+    @param cvt_to_bgr: Whether to convert the processed image back to BGR or not
+    @return: Image containing img1 and img2
+    """
+    if cvt_to_bgr:
+        return np.hstack((original, cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)))
+    return np.hstack((original, processed))
+
+def _test_background_filtering(images):
+    """Apply the background filter on each image and display it
+
+    @param images: Images to apply the background filter onto
+    """
+    print('STARTING BACKGROUND FILTERING TEST')
+
+    for i, image in enumerate(images):
+        bg_filtered_image = filter_bg(image)
+        original_and_filtered = hstack_images(image, bg_filtered_image)
+
+        cv2.imshow('original & background filtered image ({})'.format(i), original_and_filtered)
         cv2.waitKey(0)
+
     cv2.destroyAllWindows()
+    print('FINISHED BACKGROUND FILTERING TEST\n')
 
 def _test_find_stacks(images):
+    """Find the stacks in each image and display them
+
+    @param images: Images to find the stacks in
     """
-    Find the stacks in each image and display them
-    """
-    #Show the stack bounds for all images
-    for image in images:
-        cv2.imshow('original', image)
+    print('STARTING STACK LOCATION TEST')
+
+    # Show the stack bounds for all images
+    for i, image in enumerate(images):
         stacks = get_stack_bounds(image)
 
-        #Draw the bounds of each stack and the number of stacks
-        image = cv2.putText(image, str(len(stacks)), (10,30), cv2.FONT_HERSHEY_DUPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
+        # Draw the bounds of each stack and the number of stacks
+        stack_image = cv2.putText(np.copy(image),
+                                  'num_stacks: {}'.format(len(stacks)),
+                                  (10,30),
+                                  cv2.FONT_HERSHEY_DUPLEX, 0.75, (0,0,0), 1, cv2.LINE_AA)
         for stack in stacks:
-            image = draw_rect(image, stack)
-        cv2.imshow('stacks', image)
+            stack_image = draw_rect(stack_image, stack, [0, 0, 0])
+
+        original_and_stacks = hstack_images(image, stack_image, cvt_to_bgr=False)
+        cv2.imshow('original & stack-identified image ({})'.format(i), original_and_stacks)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+    print('ENDING STACK LOCATION TEST\n')
+
 def _test_click_locations(images):
-    """
-    Find the click locations in each image and display them
+    """Find the click locations in each image and display them
+
+    @param images: Images to find the click locations in
     """
     #Show the click locations for all images
-    for image in images:
-        cv2.imshow('original', image)
+    for i, image in enumerate(images):
         stack_bounds = get_stack_bounds(image)
         clicks = get_click_locations(stack_bounds)
 
-        #Draw the points at the center of their stacks and the number of points
-        image = cv2.putText(image, str(len(clicks)), (10, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+        #Draw the number of points and the points at the center of their stacks
+        clicks_image = cv2.putText(np.copy(image),
+                                   'num_stacks: {}'.format(len(clicks)),
+                                   (10, 30),
+                                   cv2.FONT_HERSHEY_DUPLEX,
+                                   0.75, (0, 0, 0), 1, cv2.LINE_AA)
         for click in clicks.values():
-            image = cv2.circle(image, click, 5, (0,0,0), -1)
-        cv2.imshow('clicks', image)
+            clicks_image = cv2.circle(clicks_image, click, 5, (0,0,0), -1)
+
+        original_and_clicks = hstack_images(image, clicks_image, False)
+        cv2.imshow('original and clicks_image {}'.format(i), original_and_clicks)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 def _test_stack_images(images):
+    """Create all the sub-images for each stack and display them
+
+    @param images: Images to find the stack images in
     """
-    Create all the sub-images for each stack and display them
-    """
-    for image in images:
-        cv2.imshow('original', image)
-        for i,stack_image in enumerate(get_stack_images(image)):
-            cv2.imshow('stack{}'.format(i), scale_image(stack_image, 1))
+    SIZE = (100, 150)
+    for i, image in enumerate(images):
+        # for idx,stack_image in enumerate(get_stack_images(image)):
+        #     cv2.imshow('stack{}'.format(i), scale_image(stack_image, 1))
+        stack_images = get_stack_images(image)
+        combined_stack_images = cv2.resize(stack_images[0], SIZE)
+        for stack_img in stack_images:
+            combined_stack_images = np.hstack((combined_stack_images, cv2.resize(stack_img, SIZE)))
+        cv2.imshow('all stack images from image {}'.format(i), combined_stack_images)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def _test_thresh_color(images, files):
-    """
-    Test thresholding out a specified color
-    """
-    colors = Colors
+def _test_thresh_color(images):
+    """Test thresholding out a specified color
 
-    for img, file in zip(images, files):
-        #Show the image
-        disp = deepcopy(img)
-        cv2.imshow(file, disp)
-
-        #Get the stack bounds to draw onto the main image
+    @param images: Images to apply a specific color threshold filter on
+    """
+    for img in images:
+        # Get the stack bounds to draw onto the main image
         stack_bounds = get_stack_bounds(img)
 
-        #Get all the sub-images for each stack
-        stacks = get_stack_images(img)
+        # Get all the sub-images for each stack
+        stack_images = get_stack_images(img)
 
-        #Loop through all the stacks
-        for stack_bound, stack in zip(stack_bounds, stacks):
+        SIZE = (200, 300)
+        filtered_imgs = []
+
+        # Loop through all the stacks
+        for stack_bound, stack_img in zip(stack_bounds, stack_images):
             #Draw the rectangle for the current stack
             disp = deepcopy(img)
-            cv2.imshow(file, draw_rect(disp, stack_bound))
+            located_stacks_img = draw_rect(np.copy(disp), stack_bound, [0,0,0])
+            cv2.imshow('Filtering stack', located_stacks_img)
 
-            #Convert the current stack image into hsv
-            img_hsv = cv2.cvtColor(stack, cv2.COLOR_BGR2HSV)
-            for i,color in enumerate(colors):
-                contours = thresh_color(stack, img_hsv, colors[color])
+            # Convert the current stack image into hsv
+            stack_img_hsv = cv2.cvtColor(stack_img, cv2.COLOR_BGR2HSV)
+            for i, color in enumerate(COLORS):
+                contours = thresh_color(stack_img, stack_img_hsv, COLORS[color])
 
-                #Draw the contours
-                stack2 = deepcopy(stack)
+                # Draw the contours
+                stack2 = deepcopy(stack_img)
                 cont_img = cv2.drawContours(stack2, contours, -1, (255,255,255), 2)
+                # cont_img = cv2.resize(cont_img, SIZE)
 
-                #Put the number of contours as text
+                # Put the number of contours as text
                 txt = '{}:{}'.format(color, len(contours))
-                cv2.putText(stack2, txt, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                print(txt)
 
-                #Display the contour information to the screen
-                name = 'cont_img{}'.format(i)
-                cv2.imshow(name, scale_image(cont_img, 2))
-                cv2.moveWindow(name, i * 200, 600)  #THE POWER OF MOVE WINDOW
-
-            #Skip to the next image
-            if cv2.waitKey(0) == ord('1'): break
+                # Display the contour information to the screen
+                cv2.imshow(txt, scale_image(cont_img, 9))
+                filtered_imgs.append(cont_img)
+                cv2.moveWindow(txt, 180*i, 600)
+            # cv2.imshow('filtered_images', np.hstack(filtered_imgs))
+            print()
+            # Skip to the next image
+            if cv2.waitKey(0) == ord('1'):
+                break
         cv2.destroyAllWindows()
 
 def _test_get_game_stack(images):
@@ -277,20 +317,18 @@ def _test_game_from_image():
     # game.solve()
     # game.display()
 
-
 #Get the images
 DIR = 'tests//'
-images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
+# images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
 # logging.basicConfig(level=logging.DEBUG)
-images = [scale_image(cv2.imread('game.png', cv2.IMREAD_COLOR), 0.5)]
+images = [scale_image(cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR), 0.5)]
 
-thresholding_window('game.png')
-# _test_background_filtering(deepcopy(images))
-# _test_find_stacks(deepcopy(images))
-# _test_click_locations(deepcopy(images))
-# _test_stack_images(deepcopy(images))
-# _test_game_stacks(deepcopy(images))
+# thresholding_window('game.png')
+_test_background_filtering(deepcopy(images))
+_test_find_stacks(deepcopy(images))
+_test_click_locations(deepcopy(images))
+_test_stack_images(deepcopy(images))
 # color_window()
-# _test_thresh_color(deepcopy(images), listdir(DIR))
+_test_thresh_color(deepcopy(images))
 # _test_get_game_stack(deepcopy(images))
-_test_game_from_image()
+# _test_game_from_image()

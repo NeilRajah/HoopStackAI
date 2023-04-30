@@ -11,20 +11,24 @@ import image_filtering
 import os.path
 
 def _pair_click(stack_locations, pair):
-    """
-    Click between two pairs
+    """Click between two pairs
+
+    @param stack_locations: Locations of all stacks
+    @param pair: The labels of the stacks (from, to) to click on
     """
     delay = 0.2
     moveTime = 0.001
-    x, y = stack_locations[pair[0]]; pag.moveTo(x, y, moveTime); pag.click()
+    x, y = stack_locations[pair[0]]
+    pag.moveTo(x, y, moveTime)
+    pag.click()
     sleep(delay)
-    x, y = stack_locations[pair[1]]; pag.moveTo(x, y, moveTime); pag.click()
+    x, y = stack_locations[pair[1]]
+    pag.moveTo(x, y, moveTime)
+    pag.click()
     sleep(delay)
 
 def _take_screenshots():
-    """
-    Take screenshots of stacks for testing
-    """
+    """Take screenshots of stacks for testing"""
     pag.alert('Hit ENTER when mouse is at the top left of the stacks bound')
     x1, y1 = pag.position()
     pag.alert('Hit ENTER when mouse is at the bottom right of the stacks bound')
@@ -41,9 +45,7 @@ def _take_screenshots():
             pag.alert('Press OK when next level is open')
 
 def get_game_bounds():
-    """
-    Get the bounds of the game from the user
-    """
+    """Get the bounds of the game from the user"""
     filename = 'coords.crd'
     if os.path.isfile(filename):
         with open(filename, 'r') as file:
@@ -66,16 +68,20 @@ def get_game_bounds():
     return x1,y1,x2,y2,s_x,s_y
 
 def screenshot_game(coords, filename):
-    """
-    Take a screenshot of the game given its coords and the name of the file to write to
+    """Take a screenshot of the game given its coords and the name of the file to write to
+
+    @param coords: Coordinates of the game on the screen in pixels
+    @param filename: Name of the file to write the coordinates to
     """
     sleep(0.25)
     x1,y1,x2,y2 = coords
     pag.screenshot(filename, region=(x1, y1, x2-x1, y2-y1))
 
 def play_moves(moves, locations):
-    """
-    Play the game given the moves that need to be done and the location of each stack
+    """Play the game given the moves that need to be done and the location of each stack
+
+    @param moves: Moves in (from, to) stack label format
+    @param locations: Locations of the stack on the screen in pixels
     """
     sleep(0.5)
     for move in moves:
@@ -128,7 +134,7 @@ def play_game():
     Write settings to file when exiting? (ie. image bounds, next button location)
     Press X to exit
     """
-    #Get the image
+    # Get the image
     filename = 'game.png'
     ans = pag.confirm('Press OK to start playing, or SET to start setting mouse locations', buttons=['OK', 'SET'])
     if ans == 'SET': os.remove('coords.crd')
@@ -163,8 +169,6 @@ def play_game():
         pag.click(coords[4], coords[5])
         sleep(0.5)
 
-
-"""
-Levels 49 and 65 no longer get stuck
-"""
-play_game()
+if __name__ == '__main__':
+    # Levels 49 and 65 no longer get stuck
+    play_game()

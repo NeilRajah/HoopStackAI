@@ -12,15 +12,30 @@ from copy import deepcopy
 from matplotlib import pyplot as plt
 import logging
 
-def draw_rect(image, rect):
+# (Hue, Hue Tolerance, Close Size, V Min)
+COLORS = {
+    'gren': (63, 5, 1, 240),
+    'red ': (176, 3, 3, 250),
+    'cyan': (95, 5, 3, 255),
+    'blue': (109, 3, 1, 240),
+    'purp': (144, 3, 1, 206),
+    'pink': (153, 4, 1, 253),
+    'orng': (25, 5, 1, 0)
+}
+
+LOWER_BG = (0,0,250)
+UPPER_BG = (255, 255, 255)
+
+def draw_rect(image, rect, clr):
     """Draw a rectangle onto an image
 
     @param image: Image to draw onto
-    @param rect: Rectangle object in (top_left_x, top_left_y,
+    @param rect: Rectangle object in (top_left_x, top_left_y, width, height) format
+    @param clr: Color of the rectangle in BGR format
     @return: Image with the rectangle drawn over
     """
     x,y,w,h = rect
-    return cv2.rectangle(image, (x,y), (x+w,y+h), [0,255,0], 2)
+    return cv2.rectangle(image, (x,y), (x+w,y+h), clr, 2)
 
 def scale_image(image, s):
     """Scale an image up by a factor s
@@ -29,12 +44,13 @@ def scale_image(image, s):
     @param s: Scale factor
     @return: Scaled image
     """
-    w = int(image.shape[1] * s); h = int(image.shape[0] * s)
+    w = int(image.shape[1] * s)
+    h = int(image.shape[0] * s)
     return cv2.resize(image, (w, h))
 
 #--------------Functions--------------#
 
-def filter_bg(image, lower=(0,0,250), upper=(255,255,255), e=5):
+def filter_bg(image, lower=LOWER_BG, upper=UPPER_BG, e=5):
     """Filter the background out for an image given lower and upper bounds
     Convert to HSV -> threshold in range -> morphologically close
 
@@ -61,8 +77,8 @@ def get_stack_bounds(image):
 
     # Get the bounding box for each stack
     contours, _ = cv2.findContours(no_bg, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    no_bg = cv2.drawContours(no_bg, contours, 0, (255, 0, 0))
-    cv2.imshow('no bg', no_bg); cv2.waitKey(0); cv2.destroyAllWindows()
+    # no_bg = cv2.drawContours(no_bg, contours, 0, (255, 0, 0))
+    # cv2.imshow('no bg', no_bg); cv2.waitKey(0); cv2.destroyAllWindows()
 
     return [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 5]  #remove erroneous small contours
 
@@ -143,8 +159,8 @@ def get_game_stack(stack_img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     stack = []
-    for color in Colors:
-        contours = thresh_color(img, hsv, Colors[color])
+    for color in COLORS:
+        contours = thresh_color(img, hsv, COLORS[color])
         for contour in contours:
             stack.append((color, cv2.boundingRect(contour)[1]))  #Color name, y value
 
@@ -153,11 +169,10 @@ def get_game_stack(stack_img):
 
 def thresh_color(img, img_hsv, clr):
     """Return the vertical positions of the contours of the color clr
-    clr - (Hue, Hue Tolerance, Close Size, V Min)
 
     @param img: Image to filter
     @param img_hsv: The hsv version of the image
-    @param clr: Color to filter
+    @param clr: Color to filter in (Hue, Hue Tolerance, Close Size, V Min) format
     @return: Vertical positions of all contours of the color clr
     """
     lowerb = (clr[0] - clr[1], 0, clr[3])
@@ -166,15 +181,15 @@ def thresh_color(img, img_hsv, clr):
     mask = cv2.inRange(img_hsv, lowerb, upperb)
     img = cv2.bitwise_and(img, img, mask=mask)
 
-    #Open up the image to remove spots inside
+    # Open up the image to remove spots inside
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((clr[2], clr[2]), np.uint8))
 
-    #Find contours
+    # Find contours
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     cont_mask = cv2.inRange(hsv, lowerb, upperb)
     contours, _ = cv2.findContours(cont_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #Filter out bad contours
+    # Filter out bad contours
     contours = filter_out_contours(contours)
 
     return contours
@@ -199,32 +214,10 @@ def filter_out_contours(contours):
         i += 1
     return contours
 
-def subtract_lists(a, b):
-    """Subtract b from a (a - b)
-
-    :param a: First list
-    :parma b: Second list
-    :return: List a without everything in b
-    """
-    for x in b:
-        if x in a:
-            a.remove(x)
-
 def is_black(img):
     """Return whether an image is all black or not
 
-    :param img: Image to check
-    :return: True if the image is all black, false if not
+    @param img: Image to check
+    @return: True if the image is all black, false if not
     """
     return cv2.countNonZero(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)) == 0
-
-# logging.basicConfig(level=logging.DEBUG)
-Colors = {
-    'gren': (63, 5, 1, 240),
-    'red ': (176, 3, 3, 250),
-    'cyan': (95, 5, 3, 250),
-    'blue': (109, 3, 1, 240),
-    'purp': (144, 3, 1, 206),
-    'pink': (153, 4, 1, 253),
-    'orng': (25, 5, 1, 0)
-}
