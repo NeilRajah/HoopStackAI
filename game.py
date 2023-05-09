@@ -12,14 +12,13 @@ import random
 import matplotlib.pyplot as plt
 
 class Game:
-    def __init__(self, max_stack_size, name=None):
+    def __init__(self, max_stack_size, name='Game'):
         """Create a Game object
 
         @param max_stack_size: The max size of a stack
         @param name: Name of the game
         """
-        if name:
-            print(name)
+        self.name = name
         self.max_stack_size = max_stack_size        # Max number of pieces in a stack
 
         # Attributes for solving
