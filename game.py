@@ -20,7 +20,7 @@ class Game:
         """
         if name:
             print(name)
-        self.max_stack_size = max_stack_size         # Max number of pieces on a stack
+        self.max_stack_size = max_stack_size        # Max number of pieces in a stack
 
         # Attributes for solving
         self.stacks = dict()                # Stacks containing pieces
@@ -140,6 +140,13 @@ class Game:
         self.move_pieces(pair_tup)
         self.display()
         self.display_history()
+
+    def get_num_stacks(self):
+        """Get the number of stacks in the game
+
+        @return: Total number of stacks
+        """
+        return self.label_idx
 
     def _is_solved(self):
         """Return if the game is solved or not

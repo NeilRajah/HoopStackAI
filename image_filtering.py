@@ -77,8 +77,10 @@ def get_stack_bounds(image):
 
     # Get the bounding box for each stack
     contours, _ = cv2.findContours(no_bg, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    # no_bg = cv2.drawContours(no_bg, contours, 0, (255, 0, 0))
-    # cv2.imshow('no bg', no_bg); cv2.waitKey(0); cv2.destroyAllWindows()
+    # no_bg = cv2.drawContours(no_bg, contours, -1, (255, 0, 0))
+    cv2.imshow('no bg', no_bg)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     return [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 5]  #remove erroneous small contours
 
@@ -88,10 +90,13 @@ def get_click_locations(stack_bounds):
     @param stack_bounds: boundingRects
     @return: The centers of each stack bound
     """
-    STACK_LABELS = 'ABCDEFGHIJ'; stacks = dict()
-    for i, r in enumerate(stack_bounds):
-        x,y,w,h = r
+    STACK_LABELS = 'ABCDEFGHIJ'
+
+    stacks = dict()
+    for i, rect in enumerate(stack_bounds):
+        x,y,w,h = rect
         stacks[STACK_LABELS[i]] = (x+w//2, y+h//2)
+
     return stacks
 
 def get_stack_images(image, bounds=None):
@@ -101,7 +106,8 @@ def get_stack_images(image, bounds=None):
     @param bounds: The bounds of each stack
     @return: The image for each stack
     """
-    if bounds is None: bounds = get_stack_bounds(image)
+    if bounds is None:
+        bounds = get_stack_bounds(image)
     return [image[y:y + h, x:x + w] for x, y, w, h in bounds]
 
 def game_from_image(img):
@@ -110,16 +116,16 @@ def game_from_image(img):
     @param img: Snapshot of all stacks
     @return: Game object (list of stacks)
     """
-    #Get the bounding box of each stack
+    # Get the bounding box of each stack
     stack_bounds = get_stack_bounds(img)
 
-    #Get the click locations for each stack
+    # Get the click locations for each stack
     clicks = get_click_locations(stack_bounds)
 
-    #Get the image for each stack
+    # Get the image for each stack
     stack_imgs = get_stack_images(img, stack_bounds)
 
-    #Create the Game object and the stacks to it
+    # Create the Game object and the stacks to it
     # TO-DO: Move this to the Game object
     stacks = [get_game_stack(stack_img) for stack_img in stack_imgs]
     num_pieces = calc_num_pieces(stacks)

@@ -157,7 +157,7 @@ def hstack_images(original, processed, cvt_to_bgr=True):
         return np.hstack((original, cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)))
     return np.hstack((original, processed))
 
-def _test_background_filtering(images):
+def test_filter_bg(images):
     """Apply the background filter on each image and display it
 
     @param images: Images to apply the background filter onto
@@ -166,15 +166,18 @@ def _test_background_filtering(images):
 
     for i, image in enumerate(images):
         bg_filtered_image = filter_bg(image)
-        original_and_filtered = hstack_images(image, bg_filtered_image)
 
+        contours, _ = cv2.findContours(bg_filtered_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        bg_filtered_image = cv2.drawContours(cv2.cvtColor(bg_filtered_image, cv2.COLOR_GRAY2BGR), contours, 0, [255,0,0], 1)
+
+        original_and_filtered = hstack_images(image, bg_filtered_image, False)
         cv2.imshow('original & background filtered image ({})'.format(i), original_and_filtered)
         cv2.waitKey(0)
 
     cv2.destroyAllWindows()
     print('FINISHED BACKGROUND FILTERING TEST\n')
 
-def _test_find_stacks(images):
+def test_get_stack_bounds(images):
     """Find the stacks in each image and display them
 
     @param images: Images to find the stacks in
@@ -200,7 +203,7 @@ def _test_find_stacks(images):
 
     print('ENDING STACK LOCATION TEST\n')
 
-def _test_click_locations(images):
+def test_get_click_locations(images):
     """Find the click locations in each image and display them
 
     @param images: Images to find the click locations in
@@ -224,7 +227,7 @@ def _test_click_locations(images):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def _test_stack_images(images):
+def test_get_stack_images(images):
     """Create all the sub-images for each stack and display them
 
     @param images: Images to find the stack images in
@@ -241,7 +244,7 @@ def _test_stack_images(images):
         cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def _test_thresh_color(images):
+def test_thresh_color(images):
     """Test thresholding out a specified color
 
     @param images: Images to apply a specific color threshold filter on
@@ -269,7 +272,7 @@ def _test_thresh_color(images):
                 contours = thresh_color(stack_img, stack_img_hsv, COLORS[color])
 
                 # Draw the contours
-                stack2 = deepcopy(stack_img)
+                stack2 = deepcopy(  stack_img)
                 cont_img = cv2.drawContours(stack2, contours, -1, (255,255,255), 2)
                 # cont_img = cv2.resize(cont_img, SIZE)
 
@@ -288,7 +291,7 @@ def _test_thresh_color(images):
                 break
         cv2.destroyAllWindows()
 
-def _test_get_game_stack(images):
+def test_get_game_stack(images):
     """
     Test creating Game instances from images
     """
@@ -305,10 +308,8 @@ def _test_get_game_stack(images):
         cv2.destroyAllWindows()
     cv2.destroyAllWindows()
 
-def _test_game_from_image():
-    """
-    Test creating a game from an image
-    """
+def test_game_from_image():
+    """Test creating a game from an image"""
     img = cv2.imread('game.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     game, _ = game_from_image(img)
@@ -317,18 +318,19 @@ def _test_game_from_image():
     # game.solve()
     # game.display()
 
-#Get the images
-DIR = 'tests//'
-# images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
-# logging.basicConfig(level=logging.DEBUG)
-images = [scale_image(cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR), 0.5)]
+if __name__ == '__main__':
+    # Get the images
+    DIR = 'tests//'
+    # images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
+    # logging.basicConfig(level=logging.DEBUG)
+    images = [scale_image(cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR), 0.5)]
 
-# thresholding_window('game.png')
-_test_background_filtering(deepcopy(images))
-_test_find_stacks(deepcopy(images))
-_test_click_locations(deepcopy(images))
-_test_stack_images(deepcopy(images))
-# color_window()
-_test_thresh_color(deepcopy(images))
-# _test_get_game_stack(deepcopy(images))
-# _test_game_from_image()
+    # Tests
+    # thresholding_window('game.png')
+    test_filter_bg(deepcopy(images))
+    test_get_stack_bounds(deepcopy(images))
+    # test_get_click_locations(deepcopy(images))
+    # test_get_stack_images(deepcopy(images))
+    # test_thresh_color(deepcopy(images))
+    # _test_get_game_stack(deepcopy(images))
+    # _test_game_from_image()
