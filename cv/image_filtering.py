@@ -4,13 +4,9 @@ Author: Neil Balaskandarajah
 Created on: 24/06/2020
 Image of game in -> model of game out
 """
-from game import Game
+from model.game import Game
 import cv2
 import numpy as np
-from os import listdir
-from copy import deepcopy
-from matplotlib import pyplot as plt
-import logging
 
 # (Hue, Hue Tolerance, Close Size, V Min)
 COLORS = {

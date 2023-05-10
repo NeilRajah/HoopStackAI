@@ -6,7 +6,6 @@ Test for opencv
 """
 import cv2
 import numpy as np
-from game import Game
 
 #load the image in
 img = cv2.imread('tests/lvl58.png', cv2.IMREAD_COLOR)

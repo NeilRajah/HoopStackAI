@@ -7,7 +7,7 @@ Play the browser version of Hoop Stack
 import pyautogui as pag
 from time import sleep
 import cv2
-import image_filtering
+from cv import image_filtering
 import os.path
 
 def _pair_click(stack_locations, pair):
@@ -135,7 +135,7 @@ def play_game():
     Press X to exit
     """
     # Get the image
-    filename = 'game.png'
+    filename = '../game.png'
     ans = pag.confirm('Press OK to start playing, or SET to start setting mouse locations', buttons=['OK', 'SET'])
     if ans == 'SET': os.remove('coords.crd')
     coords = get_game_bounds()

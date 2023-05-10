@@ -77,7 +77,7 @@ def color_window():
     Window for tuning colors out in images
     """
     # Create the image and convert it to HSV
-    img = cv2.imread('game.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('../game.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     orig = deepcopy(img)
@@ -310,7 +310,7 @@ def test_get_game_stack(images):
 
 def test_game_from_image():
     """Test creating a game from an image"""
-    img = cv2.imread('game.png', cv2.IMREAD_COLOR)
+    img = cv2.imread('../game.png', cv2.IMREAD_COLOR)
     img = scale_image(img, 0.5)
     game, _ = game_from_image(img)
     game.display()
@@ -320,10 +320,10 @@ def test_game_from_image():
 
 if __name__ == '__main__':
     # Get the images
-    DIR = 'tests//'
+    DIR = '../tests//'
     # images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
     # logging.basicConfig(level=logging.DEBUG)
-    images = [scale_image(cv2.imread('tests//lvl2.png', cv2.IMREAD_COLOR), 0.5)]
+    images = [scale_image(cv2.imread('../tests/lvl2.png', cv2.IMREAD_COLOR), 0.5)]
 
     # Tests
     # thresholding_window('game.png')

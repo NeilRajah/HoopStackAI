@@ -202,7 +202,7 @@ class Game:
         move_num = []
         t1 = time.time()
 
-        log_file = 'log.txt'
+        log_file = '../log.txt'
         open(log_file, 'w').close()
         file = open(log_file, 'a')
         file.write('\n')

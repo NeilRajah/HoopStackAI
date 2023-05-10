@@ -1,5 +1,0 @@
-
- 0: AB - AB AC BC 
- 1: BC - BC 
- 2: BC - BC 
- 3: BA - AB BA 
