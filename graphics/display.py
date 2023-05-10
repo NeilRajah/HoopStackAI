@@ -24,18 +24,75 @@ class Display:
         """
         self.game = game
         # self.is_small_layout = self.game.get_num_stacks() <= 10
-        self.is_small_layout = True
 
         # Create the PyGame screen
         pygame.display.set_caption(self.game.name)
 
-        self.screen = self._init_screen()
+        # self.screen = self._init_screen()
 
         # Assign locations to each stack
         # self.stacks = self._update_stacks()
-        self.stack_locs = self._assign_stack_locs()
+        # self.stack_locs = self._assign_stack_locs()
+
+        self.screen, self.stack_locs = self._assign_layout()
 
         self._font = pygame.font.SysFont('Consolas', Display.HOOP_HEIGHT)       # Label font
+
+    def _assign_layout(self):
+        num_stacks = self.game.get_num_stacks()
+        screen_width = 2 * Display.BORDER - Display.PADDING
+        screen_height = 2 * Display.BORDER
+        ROW_ONE_HEIGHT = Display.BORDER + Display.HOOP_HEIGHT * self.game.max_stack_size
+        ROW_TWO_HEIGHT = 2 * (Display.BORDER + Display.HOOP_HEIGHT * self.game.max_stack_size)
+
+        # Single-row
+        if num_stacks <= 4:
+            screen_width += (Display.PADDING + Display.TILE_SIZE) * num_stacks
+            screen_height += Display.HOOP_HEIGHT * self.game.max_stack_size
+
+            stack_locs = []
+            for i in range(num_stacks):
+                x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
+                stack_locs.append((x, ROW_ONE_HEIGHT))
+
+        # Double-row
+        else:
+            if num_stacks in (5, 6):
+                screen_width += (Display.PADDING + Display.TILE_SIZE) * 3
+
+                stack_locs = []
+                for i in range(3):
+                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
+                    stack_locs.append((x, ROW_ONE_HEIGHT))
+
+                for i in range(3, 6, 1):
+                    r = i-3
+                    if num_stacks == 5:
+                        x = Display.BORDER + int((r + 0.5) * (Display.TILE_SIZE + Display.PADDING))
+                    else:
+                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
+                    stack_locs.append((x, ROW_TWO_HEIGHT))
+
+            elif num_stacks in (7,8):
+                screen_width += (Display.PADDING + Display.TILE_SIZE) * 4
+
+                stack_locs = []
+                for i in range(4):
+                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
+                    stack_locs.append((x, ROW_ONE_HEIGHT))
+
+                for i in range(4, 8, 1):
+                    r = i - 4
+                    if num_stacks == 7:
+                        x = Display.BORDER + int((r + 0.5) * (Display.TILE_SIZE + Display.PADDING))
+                    else:
+                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
+                    stack_locs.append((x, ROW_TWO_HEIGHT))
+
+            screen_height += 2 * (Display.HOOP_HEIGHT * self.game.max_stack_size) + Display.BORDER
+
+        screen = pygame.display.set_mode((screen_width, screen_height))
+        return screen, stack_locs
 
     def _init_screen(self):
         """Determine the size of the screen
@@ -61,8 +118,23 @@ class Display:
                            self.screen.get_height() - Display.BORDER)
                           for i in range(self.game.get_num_stacks())]
         else:
-            # Stub
-            pass
+            stack_locs = []
+            for i in range(1, self.game.get_num_stacks()+1, 1):
+                if i <= 4:
+                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
+                    y = Display.BORDER + Display.TILE_SIZE * self.game.max_stack_size
+                else:
+                    r = i - 4
+                    if r % 2 == 0:
+                        # Even layout
+                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
+                    else:
+                        # Odd layout
+                        x = 2
+                        pass
+                    y = 2 * (Display.BORDER + Display.TILE_SIZE * self.game.max_stack_size)
+                stack_locs.append((x, y))
+            return stack_locs
 
     def _draw_stacks(self):
         """Draw all of the stacks to the screen"""
@@ -102,7 +174,7 @@ class Display:
         # Draw base line
         x1 = (stack_base_loc[0])
         x2 = (stack_base_loc[0] + Display.TILE_SIZE)
-        y = self.screen.get_height() - Display.BORDER + 2
+        y = stack_base_loc[1]
         pygame.draw.line(self.screen, (0,0,0), (x1, y), (x2, y), 7)
 
         # Draw label
@@ -190,7 +262,8 @@ if __name__ == '__main__':
         [db, r, pi, pi, g],
         [db, g, db, pu, pu],
         [pu, db, r, pu, r],
-        [g, b]
+        [g, b],
+        []
     ])
 
     disp = Display(game)
