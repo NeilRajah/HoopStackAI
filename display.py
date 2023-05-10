@@ -9,10 +9,12 @@ import game
 import threading
 
 class Display:
-    BORDER = 0.5                # Fraction of cell to use as window border
-    PADDING = 0.1               # Fraction of cell to use as padding between stacks
-    CELL_WIDTH = 1.0            # Width of cell
-    LABEL_HEIGHT = 0.8          # Height of the label row
+    TILE_SIZE = 100                     # Dimensions of tile in pixels
+    BORDER = int(0.5 * TILE_SIZE)                       # Fraction of cell to use as window border
+    PADDING = int(0.1 * TILE_SIZE)                       # Fraction of cell to use as padding between stacks
+    HOOP_WIDTH = int(1.0 * TILE_SIZE)                   # Width of cell
+    HOOP_HEIGHT = int(0.3 * TILE_SIZE)                 # Height of hoop
+    LABEL_HEIGHT = int(0.8 * TILE_SIZE)                  # Height of the label row
 
     def __init__(self, game: game.Game):
         """Create a new display to view the state of the game
@@ -23,19 +25,12 @@ class Display:
 
         self.num_cols = game.get_num_stacks()
         self.num_rows = game.max_stack_size
-        self.tile_size_px = 100
-        self.grid = [[0] * self.num_cols for _ in range (self.num_rows)]
-        self.screen = self._init_screen()
 
-    def _init_screen(self):
-        """Initialize the screen
-
-        @return: PyGame display object
-        """
         pygame.display.set_caption(self.game.name)
-        screen_width = (2*Display.BORDER + (1 + Display.PADDING) * self.num_cols) * self.tile_size_px
-        screen_height = (2*Display.BORDER + (1 + Display.PADDING) * self.num_rows + Display.LABEL_HEIGHT) * self.tile_size_px
-        return pygame.display.set_mode((int(screen_width), int(screen_height)))
+        self.screen_width = 2*Display.BORDER + (Display.PADDING + Display.TILE_SIZE) * self.num_cols
+        self.screen_height = 2*Display.BORDER + (Display.PADDING + Display.TILE_SIZE) * self.num_rows + Display.LABEL_HEIGHT
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.stack_locs = [Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING) for i in range(self.num_cols)]
 
     def _draw_grid(self, border_color):
         """Draw the grid to the display
@@ -44,25 +39,22 @@ class Display:
         """
         for row in range(self.num_rows):
             for col in range(self.num_cols):
-                rect = pygame.Rect(col * self.tile_size_px,
-                                   row * self.tile_size_px,
-                                   self.tile_size_px,
-                                   self.tile_size_px)
+                rect = pygame.Rect(col * Display.TILE_SIZE,
+                                   row * Display.TILE_SIZE,
+                                   Display.TILE_SIZE,
+                                   Display.TILE_SIZE)
                 pygame.draw.rect(self.screen, border_color, rect, 1)
 
     def _draw_stacks(self):
         """Draw all of the stacks to the screen"""
-        stack_base_loc = [-Display.BORDER, 0]       # Bottom of the first stack
-
-        for i in range(self.game.get_num_stacks()):
-            stack_base_loc[0] += Display.CELL_WIDTH + Display.PADDING
-            stack_base_loc[1] = Display.BORDER + Display.CELL_WIDTH
+        for i, stack_loc in enumerate(self.stack_locs):
             stack_label = self.game.STACK_LABELS[i]
             stack = self.game.stacks[stack_label]
+            base_loc = (stack_loc, self.screen_height - Display.LABEL_HEIGHT)
 
             # Draw stacks
-            self._draw_stack(stack, stack_base_loc)
-            self._draw_stack_label(stack_label, stack_base_loc) ###
+            self._draw_stack(stack, base_loc)
+            self._draw_stack_base(stack_label, base_loc)
 
     def _draw_stack(self, stack, stack_base_loc):
         """Draw a single stack to the screen
@@ -79,28 +71,52 @@ class Display:
                 color = stack[j - 1]
 
                 x = stack_base_loc[0]
-                y = stack_base_loc[1] + self.game.max_stack_size - j
-                rect = pygame.Rect(x * self.tile_size_px,
-                                   y * self.tile_size_px,
-                                   self.tile_size_px,
-                                   self.tile_size_px)
+                y = stack_base_loc[1] + (self.game.max_stack_size - j) * Display.HOOP_HEIGHT
+                rect = pygame.Rect(x * Display.TILE_SIZE,
+                                   y * Display.TILE_SIZE,
+                                   Display.TILE_SIZE,
+                                   Display.TILE_SIZE * Display.HOOP_HEIGHT)
 
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, BLACK, rect, 2)
 
-    def _draw_stack_label(self, stack_label, stack_base_loc):
-        pass
+    def _draw_stack_base(self, stack_label, stack_base_loc):
+        OFFSET = 0.02
+        x1 = (stack_base_loc[0] - OFFSET) * Display.TILE_SIZE
+        x2 = (stack_base_loc[0] + Display.TILE_SIZE + OFFSET) * Display.TILE_SIZE
+        y = Display.LABEL_HEIGHT + self.game.max_stack_size * Display.TILE_SIZE
+        pygame.draw.line(self.screen, (0,0,0), (x1, y), (x2, y), 10)
 
-    def _get_cell_from_mouse(self, mouse_pos):
-        """Get the cell corresponding to the mouse location
+    def _get_stack_from_mouse(self, mouse_pos):
+        """Get the stack the mouse is currently over
 
         @param mouse_pos: Position of the mouse in pixels
         @return: The grid coordinate of the cell
         """
-        return mouse_pos[0] // self.tile_size_px, mouse_pos[1] // self.tile_size_px
+        x_mouse, y_mouse = mouse_pos
+        CELL_SIDE = Display.TILE_SIZE * Display.TILE_SIZE
+
+        for i, stack_loc in enumerate(self.stack_locs):
+            stack_label = self.game.STACK_LABELS[i]
+            stack = self.game.stacks[stack_label]
+
+            x_min = stack_loc * Display.TILE_SIZE
+            x_max = x_min + CELL_SIDE
+            # y_min = Display.BASE_Y * Display.TILE_SIZE
+            # y_max = y_min + CELL_SIDE * len(stack)
+            y_max = Display.BORDER
+            y_min = Display.LABEL_HEIGHT
+
+            # print('{}: ({} | {}), ({} | {})'.format(i, x_min, x_max, y_min, y_max))
+            within_x = x_min <= x_mouse <= x_max
+            within_y = y_min <= y_mouse <= y_max
+            if within_x and within_y:
+                return i
+        return None
 
     def _click_action(self):
-        print(self._get_cell_from_mouse(pygame.mouse.get_pos()))
+        # print(pygame.mouse.get_pos())
+        print(self._get_stack_from_mouse(pygame.mouse.get_pos()))
 
     def run(self):
         """Start displaying to the screen"""
@@ -110,6 +126,7 @@ class Display:
 
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
+        disp.game.solve()
 
         while True:
             for event in pygame.event.get():
@@ -141,10 +158,9 @@ if __name__ == '__main__':
 
     game = game.Game(3)
     game.add_stacks([
-        [r, r, b],
-        [r, b],
-        [b],
-        [g, g, g]
+        [b, r, r],
+        [b, r],
+        [b]
     ])
 
     # Print out the game

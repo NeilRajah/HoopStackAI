@@ -407,15 +407,22 @@ c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red '; pi = 'pink'; pu = 'purp'; o = 'o
 # ])
 
 #Level 49
-game = Game(4)
+# game = Game(4)
+# game.add_stacks([
+#     [pu,c,b,pu],
+#     [b,c,g,g],
+#     [r,pu,pi],
+#     [r],
+#     [r,pi,pu,c],
+#     [r,pi,b,b],
+#     [pi,c,g,g]
+# ])
+
+game = Game(3)
 game.add_stacks([
-    [pu,c,b,pu],
-    [b,c,g,g],
-    [r,pu,pi],
-    [r],
-    [r,pi,pu,c],
-    [r,pi,b,b],
-    [pi,c,g,g]
+    [b, r, r],
+    [b, r],
+    [b]
 ])
 
 #Image created game

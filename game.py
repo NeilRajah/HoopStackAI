@@ -165,7 +165,7 @@ class Game:
         """
         stack = self.stacks[lbl]
         stack_is_empty = len(stack) == 0
-        stack_is_solved = self._is_stack_homog(stack) and len(stack) == self.max_stack_size
+        stack_is_solved = self._is_stack_homog(lbl) and len(stack) == self.max_stack_size
         return stack_is_empty or stack_is_solved
 
     def _is_stack_homog(self, lbl):
@@ -268,8 +268,9 @@ class Game:
         if self._is_solved():
             print("*******SOLVED******")
             self.display_history()
-            self._clean_up_moves(); print()
-        print('time to solve: {}s'.format(time.time() - t1))
+            self._clean_up_moves()
+            print()
+        print('time to solve: {}s'.format(round(time.time() - t1, 3)))
         # if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         self.display()
         self.display_history()
@@ -287,17 +288,17 @@ class Game:
 
     def _clean_up_moves(self):
         """Streamline the solution by removing redundant moves"""
-        #Remove moves with intermediate steps
+        # Remove moves with intermediate steps
         idx = 0
         while idx < len(self.history)-1:
             start = self.history[idx]; end = self.history[idx+1]
-            #turn AB BC to AC
+            # turn AB BC to AC
             if start[1] == end[0]:
                 self.history.pop(idx); self.history.pop(idx)
                 self.history.insert(idx, (start[0], end[1]))
             idx += 1
 
-            #Replace moves that don't fill stacks efficiently
+            # Replace moves that don't fill stacks efficiently
 
     def _remove_empty_solved(self, pairs):
         """Remove the empty and solved stacks from the current set of moves
