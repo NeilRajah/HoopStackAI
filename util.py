@@ -27,3 +27,5 @@ def print_tup(group, msg):
         elements = elements + ''.join(tup) + ' '
         # if i % 5 == 0: elements = elements + '\n'
     print("{}: {}".format(msg, elements))
+
+# Num uniques

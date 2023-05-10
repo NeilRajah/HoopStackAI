@@ -174,7 +174,17 @@ class Game:
         @param lbl: Label of the stack
         @return: Whether there is only one unique color present in the stack
         """
-        return len(set(self.stacks[lbl])) == 1
+        uniques = []
+        num_unique = 0
+        stack = self.stacks[lbl]
+
+        for item in stack:
+            if item not in uniques:
+                uniques.append(item)
+                num_unique += 1
+            if num_unique > 1:
+                return False
+        return True
 
     def _undo(self):
         """Undo the last move done (for backtracking)"""
@@ -245,7 +255,7 @@ class Game:
                 self.prev_pairs.append(deepcopy(pairs))
 
                 #Choose first move in remaining set
-                chosen_move = pairs[0]
+                chosen_move = pairs[int(random.random() * (len(pairs)-1))]
                 # random.seed(time.time())
                 # chosen_move = pairs[int(random.random() * len(pairs))]
                 # print('{} options, chose {}'.format(len(pairs), index))
@@ -374,3 +384,13 @@ class Game:
         @param piece: Piece to add to stack
         """
         self.stacks[stack].append(piece)
+
+    def get_stack_list(self):
+        """Get the stacks as a list
+
+        @return: List of stacks
+        """
+        return [self.stacks[self.STACK_LABELS[i]] for i in range(len(self.stacks))]
+
+    def get_label_list(self):
+        return [self.STACK_LABELS[i] for i in range(len(self.stacks))]
