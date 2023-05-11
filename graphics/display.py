@@ -109,20 +109,47 @@ class Display:
         return None
 
     def update_stack_states(self, stack_idx, event):
-        """Update the states
+        """Update the stack states
 
-        @param stack_idx: The indexs of the stack the mouse is over
+        @param stack_idx: The index of the stack the mouse is over
+        @param event: The most recent input event
+        """
+        if event.type == pygame.MOUSEBUTTONUP and 0 <= stack_idx < self.game.get_num_stacks():
+            stack_is_selected = self.stack_states[stack_idx]
+            # self.stack_states = [False] * self.game.get_num_stacks()
+
+            # If the stack that was just clicked on was selected, unselect it
+            if stack_is_selected:
+                self.stack_states[stack_idx] = False
+
+            # If the stack that was just clicked was not selected
+            else:
+                idx_already_selected_stack = self.stack_states.index(True) if True in self.stack_states else None
+
+                # If there isn't another selected stack, select this stack
+                if idx_already_selected_stack is None:
+                    self.stack_states[stack_idx] = True
+
+                # Else if there is a selected stack, make a move between the two stacks if they are compatible
+                else:
+                    stack_label_1 = self.game.STACK_LABELS[idx_already_selected_stack]
+                    stack_label_2 = self.game.STACK_LABELS[stack_idx]
+                    pair_tup = (stack_label_1, stack_label_2)
+                    if self.game.is_pair_compatible(pair_tup):
+                        self.game.move_pieces(pair_tup)
+                        self.stack_states = [False] * self.game.get_num_stacks()
+
+    def update_stacks(self, stack_idx, event):
+        """Update the stacks
+
+        @param stack_idx: The index of the stack the mouse is over
         @param event: The most recent input event
         """
         if stack_idx is None:
             return
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            old_state = self.stack_states[stack_idx]
-            self.stack_states = [False] * self.game.get_num_stacks()
+        self.update_stack_states(stack_idx, event)
 
-            # Toggle state
-            self.stack_states[stack_idx] = not old_state
 
     def run(self):
         """Start displaying to the screen"""
@@ -144,7 +171,11 @@ class Display:
                     pygame.quit()
                     quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    self.update_stack_states(mouse_stack, event)
+                    self.update_stacks(mouse_stack, event)
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_r:
+                        print('r was pressed')
+                        self.game.reset()
 
             self.screen.fill(BACKGROUND)
             self.draw_stacks()
@@ -213,5 +244,5 @@ if __name__ == '__main__':
     ])
 
     disp = Display(game)
-    game.solve()
+    # game.solve()
     disp.run()

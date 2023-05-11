@@ -193,7 +193,13 @@ class Game:
             a = self.stacks[pair[0]]
             b = self.stacks[pair[1]]
             b.append(a.pop())
-        if len(self.prev_moves) > 0: self.prev_moves.pop()
+        if len(self.prev_moves) > 0:
+            self.prev_moves.pop()
+
+    def reset(self):
+        """Reset the game to its original state"""
+        while len(self.history) > 0:
+            self._undo()
 
     def solve(self, print_moves=False, debug=False):
         """Solve the puzzle
