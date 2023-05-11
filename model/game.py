@@ -9,6 +9,7 @@ from itertools import permutations
 from copy import deepcopy
 import util
 import random
+import model.solver as solver
 import matplotlib.pyplot as plt
 
 class Game:
@@ -153,36 +154,7 @@ class Game:
         @return: True if all of the stacks are solved or empty, else false
         """
         for stack in self.stacks:
-            if not self._is_stack_solved_or_empty(stack):
-                return False
-        return True
-
-    def _is_stack_solved_or_empty(self, lbl):
-        """Return if the stack is solved, empty or neither
-
-        @param lbl: Label of the stack
-        @return: True if it is solved (all of same color and of max length) or empty (no hoops)
-        """
-        stack = self.stacks[lbl]
-        stack_is_empty = len(stack) == 0
-        stack_is_solved = self._is_stack_homog(lbl) and len(stack) == self.max_stack_size
-        return stack_is_empty or stack_is_solved
-
-    def _is_stack_homog(self, lbl):
-        """Return if a stack is all the same color or not (False if empty)
-
-        @param lbl: Label of the stack
-        @return: Whether there is only one unique color present in the stack
-        """
-        uniques = []
-        num_unique = 0
-        stack = self.stacks[lbl]
-
-        for item in stack:
-            if item not in uniques:
-                uniques.append(item)
-                num_unique += 1
-            if num_unique > 1:
+            if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
                 return False
         return True
 
@@ -204,9 +176,8 @@ class Game:
     def solve(self, print_moves=False, debug=False):
         """Solve the puzzle
 
-        @param print_moves: Whether to print the moves out or ont
+        @param print_moves: Whether to print the moves out or not
         @param debug: Whether to display debug messages or not
-        @return:
         """
         self.print_moves = print_moves
         self.debug = debug
@@ -226,6 +197,7 @@ class Game:
         # For preventing infinite loops
         num_loops = 10000
         loop = 0  
+        pairs = []
         while not self._is_solved():
             if loop >= num_loops:
                 print("\nToo many loops"); break
@@ -310,7 +282,7 @@ class Game:
         @param move: Move of (from, to) stack labels
         @return: Return the move that moves the hoop from the smaller stack to the larger one
         """
-        if self._is_stack_homog(move[0]) and self._is_stack_homog(move[1]):
+        if solver.is_stack_homog(move[0]) and solver.is_stack_homog(move[1]):
             if len(self.stacks[move[0]]) > len(self.stacks[move[1]]):
                 return move[::-1]  #Flip the move if going from large homog to small homog
         return move
@@ -334,13 +306,13 @@ class Game:
 
         @param pairs: Pairs of moves in (from, to) stack label format
         """
-        #Check for empty or solved stacks
+        # Check for empty or solved stacks
         solved_empty = []
         for stack in self.stacks:
-            if self._is_stack_solved_or_empty(stack):
+            if solver.is_stack_solved_or_empty(stack):
                 solved_empty.append(stack)
 
-        #Eliminate all moves with pieces going from empty or solved pairs
+        # Eliminate all moves with pieces going from empty or solved pairs
         remove = []
         for pair in pairs:
             for stack in solved_empty:
@@ -388,7 +360,7 @@ class Game:
         """
         remove = []
         for pair in pairs:
-            if self._is_stack_homog(pair[0]) and not self._is_stack_homog(pair[1]):
+            if solver.is_stack_homog(pair[0]) and not solver.is_stack_homog(pair[1]):
                 remove.append(pair)
         if len(remove) > 0:
             # if self.debug: self._print_tup(pairs, "pre-homogenous")
@@ -412,4 +384,8 @@ class Game:
         return [self.stacks[self.STACK_LABELS[i]] for i in range(len(self.stacks))]
 
     def get_label_list(self):
-        return [self.STACK_LABELS[i] for i in range(len(self.stacks))]
+        """
+
+        :return:
+        """
+        return self.STACK_LABELS[:self.label_idx]

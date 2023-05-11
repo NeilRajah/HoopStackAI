@@ -7,15 +7,10 @@ Visualize the game
 import layout_manager
 from model import game
 import pygame
+import painter
 
 class Display:
     # Constants
-    TILE_SIZE = 150                                     # Dimensions of tile in pixels
-    BORDER = int(0.5 * TILE_SIZE)                       # Fraction of cell to use as window border
-    PADDING = int(0.1 * TILE_SIZE)                      # Fraction of cell to use as padding between stacks
-    HOOP_WIDTH = int(1.0 * TILE_SIZE)                   # Width of cell
-    HOOP_HEIGHT = int(0.3 * TILE_SIZE)                  # Height of hoop
-    HOOP_CORNER_RAD = HOOP_HEIGHT//2                    # Corner radius of hoop
     FPS = 50                                            # Update rate of the screen
 
     def __init__(self, game: game.Game):
@@ -24,73 +19,17 @@ class Display:
         @param game: Game object to visualize
         """
         self.game = game
-        # self.is_small_layout = self.game.get_num_stacks() <= 10
+        num_stacks = self.game.get_num_stacks()
+        max_stack_size = self.game.max_stack_size
 
         # Create the PyGame screen
         pygame.display.set_caption(self.game.name)
-
-        # self.screen = self._init_screen()
-
-        # Assign locations to each stack
-        # self.stacks = self._update_stacks()
-        # self.stack_locs = self._assign_stack_locs()
-
         self.screen, self.stack_locs = layout_manager.create_layout(self)
-        self.stack_states = [False] * self.game.get_num_stacks()
-        self.stack_targets = [(0,0)] * self.game.get_num_stacks()
+        self.stack_states = [False] * num_stacks
+        self.stack_targets = [(0,0)] * num_stacks
 
-        self._font = pygame.font.SysFont('Consolas', Display.HOOP_HEIGHT)       # Label font
-
-    def draw_stacks(self):
-        """Draw all of the stacks to the screen"""
-        for i in range(self.game.get_num_stacks()):
-            stack = self.game.get_stack_list()[i]
-            label = self.game.get_label_list()[i]
-            loc = self.stack_locs[i]
-            state = self.stack_states[i]
-
-            self.draw_stack(stack, loc, state)
-            self.draw_stack_base(label, loc)
-
-    def draw_stack(self, stack, stack_loc, stack_is_selected):
-        """Draw a single stack to the screen
-
-        @param stack: Stack to draw
-        @param stack_loc: Coordinate of the bottom of the stack in pixels
-        @param stack_is_selected: Whether the stack is selected or not
-        """
-        BLACK = (0, 0, 0)
-
-        # Start from bottom up
-        for j in range(1, len(stack) + 1, 1):
-            color = stack[j - 1]        # Change this to a dict
-
-            x = stack_loc[0]
-            y = stack_loc[1] - j * Display.HOOP_HEIGHT
-
-            if j == len(stack) and stack_is_selected:
-                y -= 3 * Display.BORDER // 4  + (self.game.max_stack_size - len(stack)) * Display.HOOP_HEIGHT
-
-            rect = pygame.Rect(x, y, Display.TILE_SIZE, Display.HOOP_HEIGHT)
-
-            pygame.draw.rect(self.screen, color, rect, border_radius=Display.HOOP_CORNER_RAD)
-            pygame.draw.rect(self.screen, BLACK, rect, 3, border_radius=Display.HOOP_CORNER_RAD)
-
-    def draw_stack_base(self, stack_label, stack_base_loc):
-        """Draw the base of the stack
-
-        @param stack_label: The stack's label
-        @param stack_base_loc: The x-location of the stack
-        """
-        # Draw base line
-        x1 = (stack_base_loc[0])
-        x2 = (stack_base_loc[0] + Display.TILE_SIZE)
-        y = stack_base_loc[1]
-        pygame.draw.line(self.screen, (0,0,0), (x1, y), (x2, y), 7)
-
-        # Draw label
-        label = self._font.render(stack_label, True, (0, 0, 0))
-        self.screen.blit(label, (x1 + (Display.TILE_SIZE - int(label.get_width())) // 2 , y+10))
+        # MOVE TO PAINTER
+        self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs, self.game.get_label_list())
 
     def get_stack_from_mouse(self):
         """Get the stack the mouse is currently over
@@ -101,8 +40,8 @@ class Display:
         i = -1
         for stack, loc in zip(self.game.get_stack_list(), self.stack_locs):
             i += 1
-            within_x = loc[0] <= x <= loc[0] + Display.HOOP_WIDTH
-            within_y = loc[1] >= y >= loc[1] - Display.HOOP_HEIGHT * self.game.max_stack_size
+            within_x = loc[0] <= x <= loc[0] + layout_manager.HOOP_WIDTH
+            within_y = loc[1] >= y >= loc[1] - layout_manager.HOOP_HEIGHT * self.game.max_stack_size
             if within_x and within_y:
                 return i
 
@@ -153,7 +92,6 @@ class Display:
 
     def run(self):
         """Start displaying to the screen"""
-        # print('Number of rows: {}\nNumber of columns: {}'.format(self.num_rows, self.num_cols))
         num_loops = 0
 
         BACKGROUND = (217, 185, 155)
@@ -174,11 +112,10 @@ class Display:
                     self.update_stacks(mouse_stack, event)
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_r:
-                        print('r was pressed')
                         self.game.reset()
 
             self.screen.fill(BACKGROUND)
-            self.draw_stacks()
+            self.painter.draw_stacks(self.screen, self.game.get_stack_list(), self.stack_states)
 
             pygame.display.update()
             num_loops += 1
