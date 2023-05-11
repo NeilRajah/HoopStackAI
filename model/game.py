@@ -129,7 +129,7 @@ class Game:
 
     def display_history(self):
         """Print the move history to the console"""
-        util.print_tup(self.history, len(self.history))
+        util.print_tup(self.history, '{}:\n'.format(len(self.history)))
 
     def move_and_display(self, pair_tup):
         """Move a piece and print game information to the console
@@ -221,41 +221,53 @@ class Game:
         num_loops = 10000
         loop = 0  
         while not self._is_solved():
-            if loop >= num_loops: print("\nToo many loops"); break
+            if loop >= num_loops:
+                print("\nToo many loops"); break
 
             if self.is_backtracking:
-                #Undo the last move, reset the pairs to the last set and move forward
-                if self.debug: util.print_tup(pairs, 'pre-backtracking pairs')
+                # Undo the last move, reset the pairs to the last set and move forward
+                if self.debug:
+                    util.print_tup(pairs, 'pre-backtracking pairs')
+
                 pairs = self.prev_pairs.pop()
                 if len(self.prev_moves) > 0 and self.prev_moves[-1] in pairs:
                     pairs.remove(self.prev_moves[-1])
                 self._undo()
                 self.is_backtracking = False
-                if self.debug: print(pairs, 'post-backtracking pairs')
+
+                if self.debug:
+                    print(pairs, 'post-backtracking pairs')
             else:
-                #Generate all moves and filter out invalid moves
+                # Generate all possible moves and filter out those that are invalid
                 pairs = deepcopy(moves)
-                if self.debug: util.print_tup(pairs, "{} inital".format(len(self.history))); print()
+                if self.debug:
+                    util.print_tup(pairs, "{} inital\n".format(len(self.history)))
 
                 self._remove_empty_solved(pairs)
                 self._remove_opposite(pairs)
                 self._remove_incompatibles(pairs)
                 self._remove_homog_to_homog(pairs)
-                if self.debug: util.print_tup(pairs, "remaining")
+
+                if self.debug:
+                    util.print_tup(pairs, "remaining")
 
             if len(pairs) == 0:
-                #No moves can be performed
+                # No moves can be performed
                 self.is_backtracking = True
-                if self.debug: move_num.append(len(self.history)); print('BACKTRACKING on move', len(self.history))
+                if self.debug:
+                    move_num.append(len(self.history))
+                    print('BACKTRACKING on move', len(self.history))
             else:
-                #There are possible moves that can be performed
+                # There are possible moves that can be performed
                 # if self.debug: print('choosing: ', pairs[0])
 
                 self.prev_stacks.append(deepcopy(self.stacks))
                 self.prev_pairs.append(deepcopy(pairs))
 
-                #Choose first move in remaining set
-                chosen_move = pairs[int(random.random() * (len(pairs)-1))]
+                # Choose first move in remaining set
+                # random.seed(time.time())
+                # chosen_move = pairs[int(random.random() * (len(pairs)-1))]
+                chosen_move = pairs[-1]
                 # random.seed(time.time())
                 # chosen_move = pairs[int(random.random() * len(pairs))]
                 # print('{} options, chose {}'.format(len(pairs), index))
@@ -272,17 +284,18 @@ class Game:
                     self.move_pieces(chosen_move)
 
             loop += 1
-            if self.debug: print()
+            if self.debug:
+                print()
 
         file.close()
         if self._is_solved():
             print("*******SOLVED******")
-            self.display_history()
+            # self.display_history()
             self._clean_up_moves()
-            print()
-        print('time to solve: {}s'.format(round(time.time() - t1, 3)))
+            # print()
+        print('Time to solve: {}s'.format(round(time.time() - t1, 3)))
         # if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
-        self.display()
+        # self.display()
         self.display_history()
 
     def _fill_efficiently(self, move):

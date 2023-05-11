@@ -4,8 +4,9 @@ Author: Neil Balaskandarajah
 Created on: 05/05/2023
 Visualize the game
 """
-import pygame
+import layout_manager
 from model import game
+import pygame
 
 class Display:
     # Constants
@@ -34,138 +35,48 @@ class Display:
         # self.stacks = self._update_stacks()
         # self.stack_locs = self._assign_stack_locs()
 
-        self.screen, self.stack_locs = self._assign_layout()
+        self.screen, self.stack_locs = layout_manager.create_layout(self)
+        self.stack_states = [False] * self.game.get_num_stacks()
+        self.stack_targets = [(0,0)] * self.game.get_num_stacks()
 
         self._font = pygame.font.SysFont('Consolas', Display.HOOP_HEIGHT)       # Label font
 
-    def _assign_layout(self):
-        num_stacks = self.game.get_num_stacks()
-        screen_width = 2 * Display.BORDER - Display.PADDING
-        screen_height = 2 * Display.BORDER
-        ROW_ONE_HEIGHT = Display.BORDER + Display.HOOP_HEIGHT * self.game.max_stack_size
-        ROW_TWO_HEIGHT = 2 * (Display.BORDER + Display.HOOP_HEIGHT * self.game.max_stack_size)
-
-        # Single-row
-        if num_stacks <= 4:
-            screen_width += (Display.PADDING + Display.TILE_SIZE) * num_stacks
-            screen_height += Display.HOOP_HEIGHT * self.game.max_stack_size
-
-            stack_locs = []
-            for i in range(num_stacks):
-                x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
-                stack_locs.append((x, ROW_ONE_HEIGHT))
-
-        # Double-row
-        else:
-            if num_stacks in (5, 6):
-                screen_width += (Display.PADDING + Display.TILE_SIZE) * 3
-
-                stack_locs = []
-                for i in range(3):
-                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
-                    stack_locs.append((x, ROW_ONE_HEIGHT))
-
-                for i in range(3, 6, 1):
-                    r = i-3
-                    if num_stacks == 5:
-                        x = Display.BORDER + int((r + 0.5) * (Display.TILE_SIZE + Display.PADDING))
-                    else:
-                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
-                    stack_locs.append((x, ROW_TWO_HEIGHT))
-
-            elif num_stacks in (7,8):
-                screen_width += (Display.PADDING + Display.TILE_SIZE) * 4
-
-                stack_locs = []
-                for i in range(4):
-                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
-                    stack_locs.append((x, ROW_ONE_HEIGHT))
-
-                for i in range(4, 8, 1):
-                    r = i - 4
-                    if num_stacks == 7:
-                        x = Display.BORDER + int((r + 0.5) * (Display.TILE_SIZE + Display.PADDING))
-                    else:
-                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
-                    stack_locs.append((x, ROW_TWO_HEIGHT))
-
-            screen_height += 2 * (Display.HOOP_HEIGHT * self.game.max_stack_size) + Display.BORDER
-
-        screen = pygame.display.set_mode((screen_width, screen_height))
-        return screen, stack_locs
-
-    def _init_screen(self):
-        """Determine the size of the screen
-
-        @return: The PyGame screen
-        """
-        if self.is_small_layout:
-            screen_width = 2*Display.BORDER + (Display.PADDING + Display.TILE_SIZE) * self.game.get_num_stacks() - Display.PADDING
-            screen_height = Display.HOOP_HEIGHT * self.game.max_stack_size + 2 * Display.BORDER
-        else:
-            screen_width = 2*Display.BORDER + (Display.PADDING + Display.TILE_SIZE)*4 - Display.PADDING
-            screen_height = Display.HOOP_HEIGHT * self.game.max_stack_size * 2 + 3*Display.BORDER
-
-        return pygame.display.set_mode((screen_width, screen_height))
-
-    def _assign_stack_locs(self):
-        """Assign the locations for each stack based on the layout
-
-        @return: The locations for each stack
-        """
-        if self.is_small_layout:
-            return [(Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING),
-                           self.screen.get_height() - Display.BORDER)
-                          for i in range(self.game.get_num_stacks())]
-        else:
-            stack_locs = []
-            for i in range(1, self.game.get_num_stacks()+1, 1):
-                if i <= 4:
-                    x = Display.BORDER + i * (Display.TILE_SIZE + Display.PADDING)
-                    y = Display.BORDER + Display.TILE_SIZE * self.game.max_stack_size
-                else:
-                    r = i - 4
-                    if r % 2 == 0:
-                        # Even layout
-                        x = Display.BORDER + r * (Display.TILE_SIZE + Display.PADDING)
-                    else:
-                        # Odd layout
-                        x = 2
-                        pass
-                    y = 2 * (Display.BORDER + Display.TILE_SIZE * self.game.max_stack_size)
-                stack_locs.append((x, y))
-            return stack_locs
-
-    def _draw_stacks(self):
+    def draw_stacks(self):
         """Draw all of the stacks to the screen"""
-        for stack, loc, label in zip(self.game.get_stack_list(), self.stack_locs, self.game.get_label_list()):
-            self._draw_stack(stack, loc)
-            self._draw_stack_base(label, loc)
+        for i in range(self.game.get_num_stacks()):
+            stack = self.game.get_stack_list()[i]
+            label = self.game.get_label_list()[i]
+            loc = self.stack_locs[i]
+            state = self.stack_states[i]
 
-    def _draw_stack(self, stack, stack_base_loc):
+            self.draw_stack(stack, loc, state)
+            self.draw_stack_base(label, loc)
+
+    def draw_stack(self, stack, stack_loc, stack_is_selected):
         """Draw a single stack to the screen
 
         @param stack: Stack to draw
-        @param stack_base_loc: Coordinate of the bottom of the stack in pixels
+        @param stack_loc: Coordinate of the bottom of the stack in pixels
+        @param stack_is_selected: Whether the stack is selected or not
         """
         BLACK = (0, 0, 0)
 
         # Start from bottom up
-        for j in range(1, self.game.max_stack_size + 1, 1):
-            if j <= len(stack):
-                color = stack[j - 1]                                                        # Change this to a dict
+        for j in range(1, len(stack) + 1, 1):
+            color = stack[j - 1]        # Change this to a dict
 
-                x = stack_base_loc[0]
-                y = stack_base_loc[1] - j * Display.HOOP_HEIGHT
-                rect = pygame.Rect(x,
-                                   y,
-                                   Display.TILE_SIZE,
-                                   Display.HOOP_HEIGHT)
+            x = stack_loc[0]
+            y = stack_loc[1] - j * Display.HOOP_HEIGHT
 
-                pygame.draw.rect(self.screen, color, rect, border_radius=Display.HOOP_CORNER_RAD)
-                pygame.draw.rect(self.screen, BLACK, rect, 3, border_radius=Display.HOOP_CORNER_RAD)
+            if j == len(stack) and stack_is_selected:
+                y -= 3 * Display.BORDER // 4  + (self.game.max_stack_size - len(stack)) * Display.HOOP_HEIGHT
 
-    def _draw_stack_base(self, stack_label, stack_base_loc):
+            rect = pygame.Rect(x, y, Display.TILE_SIZE, Display.HOOP_HEIGHT)
+
+            pygame.draw.rect(self.screen, color, rect, border_radius=Display.HOOP_CORNER_RAD)
+            pygame.draw.rect(self.screen, BLACK, rect, 3, border_radius=Display.HOOP_CORNER_RAD)
+
+    def draw_stack_base(self, stack_label, stack_base_loc):
         """Draw the base of the stack
 
         @param stack_label: The stack's label
@@ -181,26 +92,37 @@ class Display:
         label = self._font.render(stack_label, True, (0, 0, 0))
         self.screen.blit(label, (x1 + (Display.TILE_SIZE - int(label.get_width())) // 2 , y+10))
 
-    def _get_stack_from_mouse(self):
+    def get_stack_from_mouse(self):
         """Get the stack the mouse is currently over
 
         @return: The index of the stack
         """
         x, y = pygame.mouse.get_pos()
+        i = -1
         for stack, loc in zip(self.game.get_stack_list(), self.stack_locs):
+            i += 1
             within_x = loc[0] <= x <= loc[0] + Display.HOOP_WIDTH
-            within_y = loc[1] >= y >= loc[1] - Display.HOOP_HEIGHT * len(stack)
+            within_y = loc[1] >= y >= loc[1] - Display.HOOP_HEIGHT * self.game.max_stack_size
             if within_x and within_y:
-                return loc
+                return i
 
         return None
 
-    def _set_cursor(self):
-        """Assign the cursor based on the position of the mouse"""
-        if self._get_stack_from_mouse() is None:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-        else:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+    def update_stack_states(self, stack_idx, event):
+        """Update the states
+
+        @param stack_idx: The indexs of the stack the mouse is over
+        @param event: The most recent input event
+        """
+        if stack_idx is None:
+            return
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            old_state = self.stack_states[stack_idx]
+            self.stack_states = [False] * self.game.get_num_stacks()
+
+            # Toggle state
+            self.stack_states[stack_idx] = not old_state
 
     def run(self):
         """Start displaying to the screen"""
@@ -213,18 +135,32 @@ class Display:
 
         while True:
             clock.tick(Display.FPS)
+
+            mouse_stack = self.get_stack_from_mouse()
+            set_cursor(mouse_stack)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-
-            self._set_cursor()
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.update_stack_states(mouse_stack, event)
 
             self.screen.fill(BACKGROUND)
-            self._draw_stacks()
+            self.draw_stacks()
 
             pygame.display.update()
             num_loops += 1
+
+def set_cursor(stack_idx):
+    """Assign the cursor based on the position of the mouse
+
+    @param stack_idx: Index of the stack
+    """
+    if stack_idx is None:
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+    else:
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
 if __name__ == '__main__':
     pygame.init()
@@ -254,18 +190,28 @@ if __name__ == '__main__':
     #     [b, pu, pi]
     # ])
 
-    game = game.Game(5, name='App Level 63')
+    # game = game.Game(5, name='App Level 63')
+    # game.add_stacks([
+    #     [r, b, b, pi, pi],
+    #     [g, g, db],
+    #     [b, r, pi, pu, b],
+    #     [db, r, pi, pi, g],
+    #     [db, g, db, pu, pu],
+    #     [pu, db, r, pu, r],
+    #     [g, b],
+    #     []
+    # ])
+
+    game = game.Game(5, name='App Level 64')
     game.add_stacks([
-        [r, b, b, pi, pi],
-        [g, g, db],
-        [b, r, pi, pu, b],
-        [db, r, pi, pi, g],
-        [db, g, db, pu, pu],
-        [pu, db, r, pu, r],
-        [g, b],
-        []
+        [r, pi, b],
+        [g, pu, g, pu, r],
+        [r, pi],
+        [b, r, b, pu, pu],
+        [pi, r, pi, g, g],
+        [g, pu, b, b, pi]
     ])
 
     disp = Display(game)
-    # game.solve()
+    game.solve()
     disp.run()

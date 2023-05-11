@@ -16,16 +16,18 @@ def subtract_lists(a, b):
         if x in a:
             a.remove(x)
 
-def print_tup(group, msg):
+def print_tup(group, msg, elems_per_row=3):
     """All elements of a tuple in a String
 
     @param group: Group of elements
     @param msg: Message to print before listing off elements
+    @param elems_per_row: Number of elements per row
     """
     elements = ''
     for i, tup in enumerate(group):
-        elements = elements + ''.join(tup) + ' '
+        end = '\n' if (i+1) % elems_per_row == 0 else ' '
+        elements = elements + ''.join(tup) + end
         # if i % 5 == 0: elements = elements + '\n'
-    print("{}: {}".format(msg, elements))
+    print("{}{}".format(msg, elements))
 
 # Num uniques
