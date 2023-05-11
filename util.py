@@ -9,7 +9,7 @@ def subtract_lists(a, b):
     """Subtract b from a (a - b)
 
     :param a: First list
-    :parma b: Second list
+    :param b: Second list
     :return: List a without everything in b
     """
     for x in b:

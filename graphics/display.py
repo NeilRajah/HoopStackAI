@@ -181,5 +181,5 @@ if __name__ == '__main__':
     ])
 
     disp = Display(game)
-    # game.solve()
+    game.solve()
     disp.run()

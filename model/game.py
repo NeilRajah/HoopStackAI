@@ -12,6 +12,23 @@ import random
 import model.solver as solver
 import matplotlib.pyplot as plt
 
+def are_stacks_compatible(stack1, stack2, max_stack_size):
+    """Return if a move can be done between the two stacks
+
+    :param stack1: First stack
+    :param stack2: Second stack
+    :param max_stack_size: Maximum number of hoops in a stack
+    :return: True if both stacks have top hoops of same color and are not full
+    """
+    # Cannot move from empty stack or to a full stack
+    if len(stack1) == 0 or len(stack2) == max_stack_size:
+        return False
+
+    # Can move to an empty stack or if the stacks have the same top piece
+    if len(stack2) == 0 or stack1[-1] == stack2[-1]:
+        return True
+    return False
+
 class Game:
     def __init__(self, max_stack_size, name='Game'):
         """Create a Game object
@@ -88,25 +105,10 @@ class Game:
         @param pair_tup: The pair of stacks identified by their stack label
         @return:
         """
-        a = self.stacks[pair_tup[0]]
-        b = self.stacks[pair_tup[1]]
+        stack1 = self.stacks[pair_tup[0]]
+        stack2 = self.stacks[pair_tup[1]]
 
-        # Can't move from an empty stack
-        if len(a) == 0:
-            return False
-
-        # Can't move to a full stack
-        if len(b) == self.max_stack_size:
-            return False
-
-        # Can move to empty stack
-        if len(b) == 0:
-            return True
-
-        # Can move if top pieces are same
-        if a[-1] == b[-1]:
-            return True
-        return False
+        return are_stacks_compatible(stack1, stack2, self.max_stack_size)
 
     def display(self):
         """Print the game out to the console"""
@@ -148,11 +150,12 @@ class Game:
         """
         return self.label_idx
 
-    def _is_solved(self):
+    def is_solved(self):
         """Return if the game is solved or not
 
         @return: True if all of the stacks are solved or empty, else false
         """
+        # return any([solver.is_stack_solved_or_empty(stack, self.max_stack_size) for stack in self.stacks])
         for stack in self.stacks:
             if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
                 return False
@@ -198,7 +201,7 @@ class Game:
         num_loops = 10000
         loop = 0  
         pairs = []
-        while not self._is_solved():
+        while not self.is_solved():
             if loop >= num_loops:
                 print("\nToo many loops"); break
 
@@ -221,10 +224,10 @@ class Game:
                 if self.debug:
                     util.print_tup(pairs, "{} inital\n".format(len(self.history)))
 
-                self._remove_empty_solved(pairs)
-                self._remove_opposite(pairs)
-                self._remove_incompatibles(pairs)
-                self._remove_homog_to_homog(pairs)
+                pairs = solver.remove_empty_solved(self.stacks, pairs, self.max_stack_size)
+                pairs = solver.remove_opposite(pairs, self.prev_moves)
+                pairs = solver.remove_incompatibles(self.stacks, pairs, self.max_stack_size)
+                pairs = solver.remove_homog_to_homog(self.stacks, pairs)
 
                 if self.debug:
                     util.print_tup(pairs, "remaining")
@@ -237,23 +240,18 @@ class Game:
                     print('BACKTRACKING on move', len(self.history))
             else:
                 # There are possible moves that can be performed
-                # if self.debug: print('choosing: ', pairs[0])
-
                 self.prev_stacks.append(deepcopy(self.stacks))
                 self.prev_pairs.append(deepcopy(pairs))
 
-                # Choose first move in remaining set
-                # random.seed(time.time())
-                # chosen_move = pairs[int(random.random() * (len(pairs)-1))]
+                # Choose a move
                 chosen_move = pairs[-1]
-                # random.seed(time.time())
-                # chosen_move = pairs[int(random.random() * len(pairs))]
-                # print('{} options, chose {}'.format(len(pairs), index))
+
                 pairs_str = ''
                 for pair in pairs:
                     pairs_str = pairs_str + ''.join(pair) + ' '
 
-                chosen_move = self._fill_efficiently(chosen_move)  #Optimize the move if its filling a stack up
+                # Optimize the move if its filling a stack up
+                chosen_move = solver.fill_efficiently(self.stacks, chosen_move)
                 file.write('{:2d}: {} - {}\n'.format(loop, ''.join(chosen_move), pairs_str))
 
                 if self.print_moves:
@@ -266,107 +264,15 @@ class Game:
                 print()
 
         file.close()
-        if self._is_solved():
+        if self.is_solved():
             print("*******SOLVED******")
             # self.display_history()
-            self._clean_up_moves()
+            self.history = solver.clean_up_moves(self.history)
             # print()
         print('Time to solve: {}s'.format(round(time.time() - t1, 3)))
         # if self.debug: plt.plot(move_num); plt.ylabel = 'Backtrack move'; plt.show()
         # self.display()
         self.display_history()
-
-    def _fill_efficiently(self, move):
-        """Fill stacks efficiently by moving from small homogenous stacks to large ones instead of vice versa
-
-        @param move: Move of (from, to) stack labels
-        @return: Return the move that moves the hoop from the smaller stack to the larger one
-        """
-        if solver.is_stack_homog(move[0]) and solver.is_stack_homog(move[1]):
-            if len(self.stacks[move[0]]) > len(self.stacks[move[1]]):
-                return move[::-1]  #Flip the move if going from large homog to small homog
-        return move
-
-    def _clean_up_moves(self):
-        """Streamline the solution by removing redundant moves"""
-        # Remove moves with intermediate steps
-        idx = 0
-        while idx < len(self.history)-1:
-            start = self.history[idx]; end = self.history[idx+1]
-            # turn AB BC to AC
-            if start[1] == end[0]:
-                self.history.pop(idx); self.history.pop(idx)
-                self.history.insert(idx, (start[0], end[1]))
-            idx += 1
-
-            # Replace moves that don't fill stacks efficiently
-
-    def _remove_empty_solved(self, pairs):
-        """Remove the empty and solved stacks from the current set of moves
-
-        @param pairs: Pairs of moves in (from, to) stack label format
-        """
-        # Check for empty or solved stacks
-        solved_empty = []
-        for stack in self.stacks:
-            if solver.is_stack_solved_or_empty(stack):
-                solved_empty.append(stack)
-
-        # Eliminate all moves with pieces going from empty or solved pairs
-        remove = []
-        for pair in pairs:
-            for stack in solved_empty:
-                if pair[0] == stack:
-                    remove.append(pair)
-
-        if len(remove) > 0:
-            # if self.debug: self._print_tup(pairs, "pre-emptysolved")
-            # if self.debug: self._print_tup(remove, "remove emptysolved")
-            util.subtract_lists(pairs, remove)
-            # if self.debug: self._print_tup(pairs, "post-emptysolved")
-
-    def _remove_opposite(self, pairs):
-        """Remove the opposite of the last move to avoid getting stuck in a two-move loop
-
-        @param pairs: Pairs of moves in (from, to) stack label format
-        """
-        if len(self.prev_moves) > 0:
-            opp = self.prev_moves[-1][::-1]
-            if opp in pairs:
-                # self._print_tup(pairs, 'pre-opposite')
-                # print('opposite: ' + ''.join(opp))
-                pairs.remove(opp)
-                # self._print_tup(pairs, 'post-opposite')
-
-    def _remove_incompatibles(self, pairs):
-        """Remove moves between incompatible stacks
-
-        @param pairs: Pairs of moves in (from, to) stack label format
-        """
-        remove = []
-        for pair in pairs:
-            if not self.is_pair_compatible(pair):
-                remove.append(pair)
-        if len(remove) > 0:
-            # if self.debug: self._print_tup(pairs, "pre-incompatibles")
-            # if self.debug: self._print_tup(remove, "remove incompatibles")
-            util.subtract_lists(pairs, remove)
-            # if self.debug: self._print_tup(pairs, "post-incompatibles")
-
-    def _remove_homog_to_homog(self, pairs):
-        """Remove moves coming from a stack with all of the same colors to a stack that's not the same color
-
-        @param pairs: Pairs of moves in (from, to) stack label format
-        """
-        remove = []
-        for pair in pairs:
-            if solver.is_stack_homog(pair[0]) and not solver.is_stack_homog(pair[1]):
-                remove.append(pair)
-        if len(remove) > 0:
-            # if self.debug: self._print_tup(pairs, "pre-homogenous")
-            # if self.debug: self._print_tup(remove, "remove homogenous")
-            util.subtract_lists(pairs, remove)
-            # if self.debug: self._print_tup(pairs, "post-homogenous")
 
     def add_piece(self, stack, piece):
         """Add a piece to a stack when creating the game

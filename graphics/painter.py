@@ -51,7 +51,7 @@ class Painter:
             y = loc[1] - j * layout_manager.HOOP_HEIGHT
 
             if j == len(stack) and state:
-                y -= 3 * layout_manager.BORDER // 4 + (self.num_stacks - len(stack) - 1) * layout_manager.HOOP_HEIGHT
+                y -= 7 * layout_manager.BORDER // 8 + (self.num_stacks - len(stack) - 1) * layout_manager.HOOP_HEIGHT
 
             rect = pygame.Rect(x, y, layout_manager.TILE_SIZE, layout_manager.HOOP_HEIGHT)
 
@@ -76,4 +76,9 @@ class Painter:
         screen.blit(label, (x1 + (layout_manager.TILE_SIZE - int(label.get_width())) // 2, y + 10))
 
     def draw_peg(self, screen, loc):
-        pass
+        t = int(0.12 * layout_manager.HOOP_WIDTH)
+        x = loc[0] + layout_manager.TILE_SIZE//2
+        y1 = loc[1]
+        y2 = loc[1] - self.max_stack_size * layout_manager.HOOP_HEIGHT
+
+        pygame.draw.line(screen, (0, 0, 0), (x, y1), (x, y2), t)
