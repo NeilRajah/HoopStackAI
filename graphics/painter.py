@@ -9,18 +9,17 @@ import pygame
 
 class Painter:
 
-    def __init__(self, num_stacks, max_stack_size, locs, labels):
+    def __init__(self, num_stacks, max_stack_size, locs):
         """Create a new Painter to draw to the screen
 
         :param num_stacks: Total number of stacks
         :param max_stack_size: Maximum number of hoops in a stack
         :param locs: Locations of each stack
-        :param labels: Labels for each stack
         """
         self.num_stacks = num_stacks
         self.max_stack_size = max_stack_size
         self.locs = locs
-        self.labels = labels
+        self.labels = '12345678'[:num_stacks]
         self.font = pygame.font.SysFont('Consolas', layout_manager.HOOP_HEIGHT)
 
     def draw_stacks(self, screen, stacks, states):

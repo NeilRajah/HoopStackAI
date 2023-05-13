@@ -11,7 +11,7 @@ import painter
 
 class Display:
     # Constants
-    FPS = 50                                            # Update rate of the screen
+    FPS = 50        # Update rate of the screen
 
     def __init__(self, game: game.Game):
         """Create a new display to view the state of the game
@@ -26,10 +26,7 @@ class Display:
         pygame.display.set_caption(self.game.name)
         self.screen, self.stack_locs = layout_manager.create_layout(self)
         self.stack_states = [False] * num_stacks
-        self.stack_targets = [(0,0)] * num_stacks
-
-        # MOVE TO PAINTER
-        self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs, self.game.get_label_list())
+        self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs)
 
     def get_stack_from_mouse(self):
         """Get the stack the mouse is currently over
@@ -38,7 +35,7 @@ class Display:
         """
         x, y = pygame.mouse.get_pos()
         i = -1
-        for stack, loc in zip(self.game.get_stack_list(), self.stack_locs):
+        for stack, loc in zip(self.game.stacks, self.stack_locs):
             i += 1
             within_x = loc[0] <= x <= loc[0] + layout_manager.HOOP_WIDTH
             within_y = loc[1] >= y >= loc[1] - layout_manager.HOOP_HEIGHT * self.game.max_stack_size
@@ -71,9 +68,9 @@ class Display:
 
                 # Else if there is a selected stack, make a move between the two stacks if they are compatible
                 else:
-                    stack_label_1 = self.game.STACK_LABELS[idx_already_selected_stack]
-                    stack_label_2 = self.game.STACK_LABELS[stack_idx]
-                    pair_tup = (stack_label_1, stack_label_2)
+                    stack1_idx = idx_already_selected_stack
+                    stack2_idx = stack_idx
+                    pair_tup = (stack1_idx, stack2_idx)
                     if self.game.is_pair_compatible(pair_tup):
                         self.game.move_pieces(pair_tup)
                         self.stack_states = [False] * self.game.get_num_stacks()
@@ -88,7 +85,6 @@ class Display:
             return
 
         self.update_stack_states(stack_idx, event)
-
 
     def run(self):
         """Start displaying to the screen"""
@@ -115,7 +111,7 @@ class Display:
                         self.game.reset()
 
             self.screen.fill(BACKGROUND)
-            self.painter.draw_stacks(self.screen, self.game.get_stack_list(), self.stack_states)
+            self.painter.draw_stacks(self.screen, self.game.stacks, self.stack_states)
 
             pygame.display.update()
             num_loops += 1
@@ -181,5 +177,5 @@ if __name__ == '__main__':
     ])
 
     disp = Display(game)
-    game.solve()
+    # game.solve()
     disp.run()
