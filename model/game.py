@@ -123,15 +123,6 @@ class Game:
             print(row)
         print(spacer)
 
-    def move_and_display(self, pair_tup):
-        """Move a piece and print game information to the console
-
-        @param pair_tup: The pair of stacks identified by their stack label
-        """
-        self.move_pieces(pair_tup)
-        self.display()
-        self.display_history()
-
     def get_num_stacks(self):
         """Get the number of stacks in the game
 

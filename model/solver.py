@@ -74,11 +74,11 @@ def clean_up_moves(history):
         idx += 1
     return history
 
-def remove_empty_solved(stacks, pairs, max_stack_size):
+def remove_empty_solved(stacks, possible_moves, max_stack_size):
     """Remove the empty and solved stacks from the current set of moves
 
     :param stacks: List of stacks
-    :param pairs: Pairs of moves in (from, to) stack label format
+    :param possible_moves: Possible moves in (from, to) stack label format
     :param max_stack_size: Greatest number of hoops in a stack
     """
     # Check for empty or solved stacks
@@ -89,76 +89,80 @@ def remove_empty_solved(stacks, pairs, max_stack_size):
 
     # Eliminate all moves with pieces going from empty or solved pairs
     remove = []
-    for pair in pairs:
+    for move in possible_moves:
         for stack in solved_or_empty:
-            if pair[0] == stack:
-                remove.append(pair)
+            if move[0] == stack:
+                remove.append(move)
     if len(remove) > 0:
-        util.subtract_lists(pairs, remove)
+        util.subtract_lists(possible_moves, remove)
 
-    return pairs
+    return possible_moves
 
-def remove_opposite(pairs, prev_moves):
+def remove_opposite(possible_moves, prev_moves):
     """Remove the opposite of the last move to avoid getting stuck in a two-move loop
 
-    :param pairs: Pairs of moves in (from, to) stack label format
+    :param possible_moves: Possible moves in (from, to) stack label format
     :param prev_moves: List of previous moves
     """
     if len(prev_moves) > 0:
         opp = prev_moves[-1][::-1]
-        if opp in pairs:
-            pairs.remove(opp)
+        if opp in possible_moves:
+            possible_moves.remove(opp)
 
-    return pairs
+    return possible_moves
 
-def remove_incompatibles(stacks, pairs, max_stack_size):
+def remove_incompatibles(stacks, possible_moves, max_stack_size):
     """Remove moves between incompatible stacks
 
     :param stacks: Dictionary of stacks
-    :param pairs: Pairs of moves in (from, to) stack label format
+    :param possible_moves: Possible moves in (from, to) stack label format
     :param max_stack_size: The maximum number of hoops in a stack
     :return: The new set of moves without moves to/from incompatible stacks
     """
     remove = []
-    for pair in pairs:
+    for pair in possible_moves:
         stack1 = stacks[pair[0]]
         stack2 = stacks[pair[1]]
         if not game.are_stacks_compatible(stack1, stack2, max_stack_size):
             remove.append(pair)
     if len(remove) > 0:
-        util.subtract_lists(pairs, remove)
+        util.subtract_lists(possible_moves, remove)
 
-    return pairs
+    return possible_moves
 
-def remove_homog_to_homog(stacks, pairs):
+def remove_homog_to_homog(stacks, possible_moves):
     """Remove moves coming from a stack with all of the same colors to a stack that's not the same color
 
     :param stacks: Dictionary of stacks
-    :param pairs: Pairs of moves in (from, to) stack label format
+    :param possible_moves: Possible moves in (from, to) stack label format
     """
     remove = []
-    for pair in pairs:
-        stack1 = stacks[pair[0]]
-        stack2 = stacks[pair[1]]
+    for move in possible_moves:
+        stack1 = stacks[move[0]]
+        stack2 = stacks[move[1]]
         if is_stack_homog(stack1) and not is_stack_homog(stack2):
-            remove.append(pair)
+            remove.append(move)
     if len(remove) > 0:
-        util.subtract_lists(pairs, remove)
+        util.subtract_lists(possible_moves, remove)
 
-    return pairs
+    return possible_moves
 
 class Solver:
     def __init__(self):
         """Create a new Solver object"""
         self.history = []                   # History of moves the solver has performed
-        self.prev_moves = []                # Previous move
-        self.prev_possible_moves = []                # Moves that could be performed last iteration
+        self.prev_moves = []                # Moves the solver attempted last step
+        self.prev_possible_moves = []       # Moves that could be performed last iteration
         self.prev_stacks = []               # Previous state of all of the stacks for backtracking
         self.is_backtracking = False        # Whether the solver is currently backtracking or not
 
     def display_history(self):
         """Print the move history to the console"""
-        util.print_tup(self.history, '{}:\n'.format(len(self.history)))
+        # util.print_tup(self.history, '{}:\n'.format(len(self.history)))
+        print('------')
+        for move in self.history:
+            print('{} -> {}'.format(move[0], move[1]))
+        print('------')
 
     def possible_moves(self, moves, game):
         """Return all possible moves
@@ -183,18 +187,19 @@ class Solver:
         :return: Moves to play the game
         """
         # Start the solution by calculating all possible moves
-        moves = list(itertools.permutations(game.stacks, 2))  # change to local?
+        stack_indices = [i for i in range(len(game.stacks))]
+        moves = list(itertools.permutations(stack_indices, 2))  # change to local?
         self.prev_possible_moves.append(copy.deepcopy(moves))
         t1 = time.time()
 
         # For preventing infinite loops
         num_loops = 10000
-        loop = 0
-        possible_moves = []
+        loop = 1
         while not game.is_solved():
-            if loop >= num_loops:
+            if loop > num_loops:
                 raise Exception('No solution found!')
 
+            print('Loop {}{}'.format(loop, ', solver is backtracking' if self.is_backtracking else ''))
             if self.is_backtracking:
                 # Undo the last move, reset the pairs to the last set and move forward
 
@@ -219,14 +224,15 @@ class Solver:
                 # Choose a move
                 chosen_move = possible_moves[-1]
 
-                pairs_str = ''
-                for pair in possible_moves:
-                    pairs_str = pairs_str + ''.join(pair) + ' '
+                moves_str = ''
+                for move in possible_moves:
+                    moves_str = moves_str + ''.join(str(move)) + ' '
 
                 # Optimize the move if its filling a stack up
                 chosen_move = fill_efficiently(game.stacks, chosen_move)
 
                 game.move_pieces(chosen_move)
+                self.history.append(chosen_move)
 
             loop += 1
 
@@ -235,6 +241,9 @@ class Solver:
             self.history = clean_up_moves(self.history)
         print('Time to solve: {}s'.format(round(time.time() - t1, 3)))
         self.display_history()
+        game.display()
+        print(self.history)
+        return self.history
 
     def undo(self, game):
         """Undo in the game and edit the solver data
@@ -242,7 +251,4 @@ class Solver:
         :param game:
         :return:
         """
-        pass
-
-    def play_solution(self, disp, pause):
         pass

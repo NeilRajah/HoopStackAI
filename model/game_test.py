@@ -5,8 +5,10 @@ Created on: 17/06/2020
 AI for solving hoop stack game
 """
 import time
-
+import pygame
 from game import Game
+import solver
+from graphics.display import Display
 
 c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red '; pi = 'pink'; pu = 'purp'; o = 'orng'
 
@@ -438,8 +440,3 @@ game.add_stacks([
 # ]
 # game.add_stacks([stack[::-1] for stack in stacks])
 
-game.display()
-t1 = time.time()
-game.solve(print_moves=False, debug=False)
-# [print('{},'.format(x)) for x in game.stacks.values()]
-# game.display_history()

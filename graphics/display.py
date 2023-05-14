@@ -4,10 +4,13 @@ Author: Neil Balaskandarajah
 Created on: 05/05/2023
 Visualize the game
 """
-import layout_manager
+import time
+from model import solver
+from graphics import layout_manager
 from model import game
 import pygame
-import painter
+from graphics import painter
+from copy import deepcopy
 
 class Display:
     # Constants
@@ -27,6 +30,7 @@ class Display:
         self.screen, self.stack_locs = layout_manager.create_layout(self)
         self.stack_states = [False] * num_stacks
         self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs)
+        self.clock = pygame.time.Clock()
 
     def get_stack_from_mouse(self):
         """Get the stack the mouse is currently over
@@ -44,13 +48,13 @@ class Display:
 
         return None
 
-    def update_stack_states(self, stack_idx, event):
+    def update_stack_states(self, stack_idx, selected):
         """Update the stack states
 
-        @param stack_idx: The index of the stack the mouse is over
-        @param event: The most recent input event
+        :param stack_idx: The index of the stack the mouse is over
+        :param selected: If the most recent event was a selection
         """
-        if event.type == pygame.MOUSEBUTTONUP and 0 <= stack_idx < self.game.get_num_stacks():
+        if selected and 0 <= stack_idx < self.game.get_num_stacks():
             stack_is_selected = self.stack_states[stack_idx]
             # self.stack_states = [False] * self.game.get_num_stacks()
 
@@ -92,10 +96,9 @@ class Display:
 
         BACKGROUND = (217, 185, 155)
         # disp.game.solve()
-        clock = pygame.time.Clock()
 
         while True:
-            clock.tick(Display.FPS)
+            self.clock.tick(Display.FPS)
 
             mouse_stack = self.get_stack_from_mouse()
             set_cursor(mouse_stack)
@@ -105,7 +108,7 @@ class Display:
                     pygame.quit()
                     quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    self.update_stacks(mouse_stack, event)
+                    self.update_stacks(mouse_stack, True)
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_r:
                         self.game.reset()
@@ -115,6 +118,36 @@ class Display:
 
             pygame.display.update()
             num_loops += 1
+
+    def play_moves(self, moves, fps):
+        BACKGROUND = (217, 185, 155)
+
+        move_idx = 0
+        selecting = True
+        t1 = time.time()
+        while True:
+            self.screen.fill(BACKGROUND)
+            self.painter.draw_stacks(self.screen, self.game.stacks, self.stack_states)
+            pygame.display.update()
+            self.clock.tick(2)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+            if move_idx < len(moves):
+                print(round(time.time() - t1, 3) * 1000, move_idx, selecting)
+                move = moves[move_idx]
+
+                if selecting:
+                    self.update_stacks(move[0], pygame.MOUSEBUTTONUP)
+                    selecting = False
+                else:
+                    self.update_stacks(move[1], pygame.MOUSEBUTTONUP)
+                    move_idx += 1
+                    selecting = True
+
 
 def set_cursor(stack_idx):
     """Assign the cursor based on the position of the mouse
@@ -166,16 +199,29 @@ if __name__ == '__main__':
     #     []
     # ])
 
-    game = game.Game(5, name='App Level 64')
+    # game = game.Game(5, name='App Level 64')
+    # game.add_stacks([
+    #     [r, pi, b],
+    #     [g, pu, g, pu, r],
+    #     [r, pi],
+    #     [b, r, b, pu, pu],
+    #     [pi, r, pi, g, g],
+    #     [g, pu, b, b, pi]
+    # ])
+
+    game = game.Game(3)
     game.add_stacks([
-        [r, pi, b],
-        [g, pu, g, pu, r],
-        [r, pi],
-        [b, r, b, pu, pu],
-        [pi, r, pi, g, g],
-        [g, pu, b, b, pi]
+        [b, r, r],
+        [b, r],
+        [b]
     ])
 
+    pygame.init()
+    game.display()
+    t1 = time.time()
     disp = Display(game)
-    # game.solve()
-    disp.run()
+    # disp.run()
+    s = solver.Solver()
+    solution = s.solve(deepcopy(game))
+
+    disp.play_moves(solution, 0.5)

@@ -6,12 +6,13 @@ Manage the layout
 """
 import pygame
 
-TILE_SIZE = 150                                     # Dimensions of tile in pixels
-BORDER = int(0.5 * TILE_SIZE)                       # Fraction of cell to use as window border
-PADDING = int(0.1 * TILE_SIZE)                      # Fraction of cell to use as padding between stacks
-HOOP_WIDTH = int(1.0 * TILE_SIZE)                   # Width of cell
-HOOP_HEIGHT = int(0.3 * TILE_SIZE)                  # Height of hoop
-HOOP_CORNER_RAD = HOOP_HEIGHT//2                    # Corner radius of hoop
+TILE_SIZE = 150                             # Dimensions of tile in pixels
+BORDER = int(0.5 * TILE_SIZE)               # Fraction of cell to use as window border
+PADDING = int(0.1 * TILE_SIZE)              # Fraction of cell to use as padding between stacks
+HOOP_WIDTH = int(1.0 * TILE_SIZE)           # Width of cell
+HOOP_HEIGHT = int(0.3 * TILE_SIZE)          # Height of hoop
+HOOP_CORNER_RAD = HOOP_HEIGHT//2            # Corner radius of hoop
+PEG_WIDTH = int(0.12 * HOOP_WIDTH)          # Width of the peg
 
 def create_layout(disp):
     """Create the layout of the window
