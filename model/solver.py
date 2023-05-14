@@ -152,9 +152,29 @@ class Solver:
         """Create a new Solver object"""
         self.history = []                   # History of moves the solver has performed
         self.prev_moves = []                # Previous move
-        self.prev_pairs = []                # Moves that could be performed last iteration
+        self.prev_possible_moves = []                # Moves that could be performed last iteration
         self.prev_stacks = []               # Previous state of all of the stacks for backtracking
         self.is_backtracking = False        # Whether the solver is currently backtracking or not
+
+    def display_history(self):
+        """Print the move history to the console"""
+        util.print_tup(self.history, '{}:\n'.format(len(self.history)))
+
+    def possible_moves(self, moves, game):
+        """Return all possible moves
+
+        :param moves: All 2-long permutations of the stack indices
+        :param game: The game with all of the stacks
+        :return: All the possible moves in (from, to) format
+        """
+        possible_moves = copy.deepcopy(moves)
+
+        possible_moves = remove_empty_solved(game.stacks, possible_moves, game.max_stack_size)
+        possible_moves = remove_opposite(possible_moves, self.prev_moves)
+        possible_moves = remove_incompatibles(game.stacks, possible_moves, game.max_stack_size)
+        possible_moves = remove_homog_to_homog(game.stacks, possible_moves)
+
+        return possible_moves
 
     def solve(self, game):
         """Solve the puzzle
@@ -162,72 +182,57 @@ class Solver:
         :param game: Game to solve
         :return: Moves to play the game
         """
-        print("*******START*******")
-
         # Start the solution by calculating all possible moves
         moves = list(itertools.permutations(game.stacks, 2))  # change to local?
-        self.prev_pairs.append(copy.deepcopy(moves))
+        self.prev_possible_moves.append(copy.deepcopy(moves))
         t1 = time.time()
-
-        log_file = '../log.txt'
-        open(log_file, 'w').close()
-        file = open(log_file, 'a')
-        file.write('\n')
 
         # For preventing infinite loops
         num_loops = 10000
         loop = 0
-        pairs = []
+        possible_moves = []
         while not game.is_solved():
             if loop >= num_loops:
-                print("\nToo many loops")
-                break
+                raise Exception('No solution found!')
 
             if self.is_backtracking:
                 # Undo the last move, reset the pairs to the last set and move forward
 
-                pairs = self.prev_pairs.pop()
-                if len(self.prev_moves) > 0 and self.prev_moves[-1] in pairs:
-                    pairs.remove(self.prev_moves[-1])
+                possible_moves = self.prev_possible_moves.pop()
+                if len(self.prev_moves) > 0 and self.prev_moves[-1] in possible_moves:
+                    possible_moves.remove(self.prev_moves[-1])
                 game.undo()
                 self.is_backtracking = False
 
             else:
                 # Generate all possible moves and filter out those that are invalid
-                pairs = copy.deepcopy(moves)
+                possible_moves = self.possible_moves(moves, game)
 
-                pairs = remove_empty_solved(game.stacks, pairs, game.max_stack_size)
-                pairs = remove_opposite(pairs, self.prev_moves)
-                pairs = remove_incompatibles(game.stacks, pairs, game.max_stack_size)
-                pairs = remove_homog_to_homog(game.stacks, pairs)
-
-            if len(pairs) == 0:
+            if len(possible_moves) == 0:
                 # No moves can be performed
                 self.is_backtracking = True
             else:
                 # There are possible moves that can be performed
                 self.prev_stacks.append(copy.deepcopy(game.stacks))
-                self.prev_pairs.append(copy.deepcopy(pairs))
+                self.prev_possible_moves.append(copy.deepcopy(possible_moves))
 
                 # Choose a move
-                chosen_move = pairs[-1]
+                chosen_move = possible_moves[-1]
 
                 pairs_str = ''
-                for pair in pairs:
+                for pair in possible_moves:
                     pairs_str = pairs_str + ''.join(pair) + ' '
 
                 # Optimize the move if its filling a stack up
                 chosen_move = fill_efficiently(game.stacks, chosen_move)
-                file.write('{:2d}: {} - {}\n'.format(loop, ''.join(chosen_move), pairs_str))
 
                 game.move_pieces(chosen_move)
 
             loop += 1
 
-        file.close()
-        if self.is_solved():
+        if game.is_solved():
             print("*******SOLVED******")
-            self.history = solver.clean_up_moves(self.history)
+            self.history = clean_up_moves(self.history)
         print('Time to solve: {}s'.format(round(time.time() - t1, 3)))
         self.display_history()
 
@@ -237,6 +242,7 @@ class Solver:
         :param game:
         :return:
         """
+        pass
 
     def play_solution(self, disp, pause):
         pass

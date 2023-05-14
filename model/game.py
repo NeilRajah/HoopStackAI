@@ -69,7 +69,7 @@ class Game:
         @param stack_idx: Index of the stack to add the piece to
         @param piece: Piece to add to stack
         """
-        self.stacks.append(piece)
+        self.stacks[stack_idx].append(piece)
 
     #---Actions---#
 
@@ -122,10 +122,6 @@ class Game:
                     row = row + "{} ".format(stack[i])
             print(row)
         print(spacer)
-
-    def display_history(self):
-        """Print the move history to the console"""
-        util.print_tup(self.history, '{}:\n'.format(len(self.history)))
 
     def move_and_display(self, pair_tup):
         """Move a piece and print game information to the console
