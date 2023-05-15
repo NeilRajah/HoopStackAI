@@ -73,12 +73,13 @@ class Game:
 
     #---Actions---#
 
-    def move_pieces(self, pair_tup):
+    def move_pieces(self, pair_tup, bypassing=False):
         """Move a piece from the top of one stack to the other
 
-        @param pair_tup: The pair of stacks in (from, to) format (ie. move_pieces (x,y) moves from stack x to stack y)
+        :param pair_tup: The pair of stacks in (from, to) format (ie. move_pieces (x,y) moves from stack x to stack y)
+        :param bypassing: Whether the rules should be considered or not (Rules not considered if true)
         """
-        if not self.is_pair_compatible(pair_tup):
+        if not self.is_pair_compatible(pair_tup) and not bypassing:
             msg = "Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1])
             msg = msg + "\n{} | {}".format(self.stacks[pair_tup[0]], self.stacks[pair_tup[1]])
             raise Exception(msg)
@@ -87,10 +88,6 @@ class Game:
         a = self.stacks[pair_tup[0]]
         b = self.stacks[pair_tup[1]]
         b.append(a.pop())
-
-        # Save to history
-        # self.history.append(pair_tup)
-        # self.prev_moves.append(pair_tup)
 
     def is_pair_compatible(self, pair_tup):
         """Check if a pair of stacks are compatible
@@ -140,19 +137,4 @@ class Game:
             if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
                 return False
         return True
-
-    def undo(self):
-        """Undo the last move done (for backtracking)"""
-        if len(self.history) > 0:
-            pair = self.history.pop()[::-1]  # opposite of last move done
-            a = self.stacks[pair[0]]
-            b = self.stacks[pair[1]]
-            b.append(a.pop())
-        if len(self.prev_moves) > 0:
-            self.prev_moves.pop()
-
-    def reset(self):
-        """Reset the game to its original state"""
-        while len(self.history) > 0:
-            self.undo()
 

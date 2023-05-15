@@ -7,6 +7,8 @@ Painting to the screen
 from graphics import layout_manager
 import pygame
 
+BACKGROUND_COLOR = (217, 185, 155)
+
 class Painter:
 
     def __init__(self, num_stacks, max_stack_size, locs):

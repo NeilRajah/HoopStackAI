@@ -11,6 +11,7 @@ from model import game
 import pygame
 from graphics import painter
 from copy import deepcopy
+import thorpy
 
 class Display:
     # Constants
@@ -27,7 +28,8 @@ class Display:
 
         # Create the PyGame screen
         pygame.display.set_caption(self.game.name)
-        self.screen, self.stack_locs = layout_manager.create_layout(self)
+        self.screen, self.stack_locs = layout_manager.layout_game_scene(self)
+        thorpy.init(self.screen, thorpy.theme_game1)
         self.stack_states = [False] * num_stacks
         self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs)
         self.clock = pygame.time.Clock()
@@ -92,10 +94,10 @@ class Display:
 
     def run(self):
         """Start displaying to the screen"""
+        print(disp.screen.get_size())
         num_loops = 0
 
         BACKGROUND = (217, 185, 155)
-        # disp.game.solve()
 
         while True:
             self.clock.tick(Display.FPS)
@@ -109,26 +111,39 @@ class Display:
                     quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.update_stacks(mouse_stack, True)
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_r:
-                        self.game.reset()
+                # elif event.type == pygame.KEYUP:
+                #     if event.key == pygame.K_r:
+                #         self.game.reset()
 
-            self.screen.fill(BACKGROUND)
-            self.painter.draw_stacks(self.screen, self.game.stacks, self.stack_states)
+            disp.screen.fill(BACKGROUND)
+
+            self.painter.draw_stacks(disp.screen, self.game.stacks, self.stack_states)
+            # pygame.draw.line(disp.screen, (0,0,0),
+            #                  (0, top_screen.get_height()),
+            #                  (top_screen.get_width(), top_screen.get_height()),
+            #                  2)
+            # disp.screen.blit(bottom_screen, (0, top_screen.get_height()))
 
             pygame.display.update()
             num_loops += 1
 
-    def play_moves(self, moves, fps):
-        BACKGROUND = (217, 185, 155)
+    def play_moves(self, moves):
+        """Play out a sequence of moves on the screen
 
+        :param moves: Sequence of moves to play
+        """
         move_idx = 0
         selecting = True
-        t1 = time.time()
+
+        slider, slider_updater = layout_manager.layout_slider(self, len(moves))
+
         while True:
-            self.screen.fill(BACKGROUND)
+            self.screen.fill(painter.BACKGROUND_COLOR)
             self.painter.draw_stacks(self.screen, self.game.stacks, self.stack_states)
             pygame.display.update()
+
+            slider.set_value(move_idx)
+            slider_updater.update(events=pygame.event.get(), mouse_rel=pygame.mouse.get_rel())
             self.clock.tick(2)
 
             for event in pygame.event.get():
@@ -137,7 +152,6 @@ class Display:
                     quit()
 
             if move_idx < len(moves):
-                print(round(time.time() - t1, 3) * 1000, move_idx, selecting)
                 move = moves[move_idx]
 
                 if selecting:
@@ -147,7 +161,6 @@ class Display:
                     self.update_stacks(move[1], pygame.MOUSEBUTTONUP)
                     move_idx += 1
                     selecting = True
-
 
 def set_cursor(stack_idx):
     """Assign the cursor based on the position of the mouse
@@ -220,8 +233,8 @@ if __name__ == '__main__':
     game.display()
     t1 = time.time()
     disp = Display(game)
-    # disp.run()
     s = solver.Solver()
     solution = s.solve(deepcopy(game))
 
-    disp.play_moves(solution, 0.5)
+    # disp.run()
+    disp.play_moves(solution)

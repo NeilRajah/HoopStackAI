@@ -5,7 +5,10 @@ Created on: 10/05/2023
 Manage the layout
 """
 import pygame
+import display
+import thorpy
 
+# Game scene constants
 TILE_SIZE = 150                             # Dimensions of tile in pixels
 BORDER = int(0.5 * TILE_SIZE)               # Fraction of cell to use as window border
 PADDING = int(0.1 * TILE_SIZE)              # Fraction of cell to use as padding between stacks
@@ -14,8 +17,11 @@ HOOP_HEIGHT = int(0.3 * TILE_SIZE)          # Height of hoop
 HOOP_CORNER_RAD = HOOP_HEIGHT//2            # Corner radius of hoop
 PEG_WIDTH = int(0.12 * HOOP_WIDTH)          # Width of the peg
 
-def create_layout(disp):
-    """Create the layout of the window
+# Slider constants
+SLIDER_HEIGHT = int(0.5 * TILE_SIZE)        # Height of the slider
+
+def layout_game_scene(disp):
+    """Create the layout of the game window
 
     @param disp: object
     @return: The screen and the stack locations
@@ -76,3 +82,24 @@ def create_layout(disp):
 
     screen = pygame.display.set_mode((screen_width, screen_height))
     return screen, stack_locs
+
+def layout_slider(disp: display.Display, num_moves):
+    # Create the slider
+    scene_width = disp.screen.get_width()
+    scene_height = disp.screen.get_height()
+    disp.screen = pygame.display.set_mode((scene_width, scene_height + SLIDER_HEIGHT//2))
+    thorpy.init(disp.screen, thorpy.theme_classic)
+
+    slider = thorpy.SliderWithText("Move number: ",
+                                0, num_moves-1, 0,  # min, max and initial values
+                                int(0.6 * scene_width), "h",  # length and orientation
+                                dragger_size=(10, 20),
+                                show_value_on_right_side=True,
+                                edit=False)  # allow to edit value as a text
+    group = thorpy.Group([slider])
+    group.set_center(scene_width//2, scene_height//2)
+
+    return slider, group.get_updater()
+
+def layout_move_history_window(disp):
+    pass
