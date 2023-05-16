@@ -9,6 +9,8 @@ import pygame
 from game import Game
 import solver
 from graphics import display
+import itertools
+import copy
 
 c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 'orange'
 
@@ -28,18 +30,6 @@ def solution_test(max_stack_size, game_name, stacks):
     print(solution)
     disp = display.Display(game)
     disp.play_moves(solution)
-
-game = Game(4, 'Sort Hoop Level 4')
-
-game.add_stacks([
-    ['blue', 'blue', 'orange', 'blue'],
-    ['orange', 'orange', 'blue', 'orange'],
-    [],
-    []
-])
-s = solver.Solver()
-solution = s.solve(game)
-print(solution)
 
 #lvl 1
 # game = Game(3)
@@ -470,19 +460,56 @@ print(solution)
 # game.add_stacks([stack[::-1] for stack in stacks])
 
 def test_is_stack_solved_or_empty():
-    pass
+    print('Testing is_stack_solved_or_empty')
+    assert solver.is_stack_solved_or_empty([], 3) == True, 'should be true'
+    assert solver.is_stack_solved_or_empty([1, 1, 1], 3) == True, 'should be true'
+    assert solver.is_stack_solved_or_empty([2, 1], 3) == False, 'should be false'
 
 def test_is_stack_homog():
-    pass
+    print('Testing is_stack_homog')
+    assert solver.is_stack_homog([]) == False
+    assert solver.is_stack_homog([1, 1, 1]) == True
+    assert solver.is_stack_homog([1, 2, 3]) == False
 
-def test_fill_efficiently():
-    pass
+def test_fill_homog_efficiently():
+    print('Testing fill_homog_efficiently')
+    stacks = [[2, 1, 1, 1], [1], [1, 1]]
+    assert solver.fill_homog_efficiently(stacks, (1, 2)) == (1, 2)
+    assert solver.fill_homog_efficiently(stacks, (2, 1)) == (1, 2)
+    assert solver.fill_homog_efficiently(stacks, (0, 1)) == (0, 1)
+    assert solver.fill_homog_efficiently(stacks, (1, 0)) == (1, 0)
 
 def test_clean_up_moves():
-    pass
+    print('Testing clean_up_moves')
+    ans = solver.clean_up_moves([(0, 1), (1, 2)])
+    solution = [(0, 2)]
+    if not all([move == sol_move for move, sol_move in zip(ans, solution)]):
+        raise AssertionError('Lol not right')
+    ans = solver.clean_up_moves([(0, 1), (0, 1)])
+    solution = [(0, 1), (0, 1)]
+    if not all([move == sol_move for move, sol_move in zip(ans, solution)]):
+        raise AssertionError('Lol not right')
 
 def test_remove_empty_solved():
-    pass
+    print('Testing remove_empty_solved')
+    stacks = [[], [1, 1, 1], [2, 2], [2]]
+    possible_moves = list(itertools.permutations([i for i in range(len(stacks))], 2))
+    max_stack_size = 3
+
+    print('Possible moves: {}'.format(len(possible_moves)))
+    for i, move in enumerate(possible_moves):
+        print(move, end=' ')
+        if (i+1) % 3 == 0:
+            print()
+
+    ans = solver.remove_empty_solved(stacks, copy.deepcopy(possible_moves), max_stack_size)
+    print('Answer: {}'.format(len(ans)))
+    for i, move in enumerate(ans):
+        print(move, end=' ')
+        if (i+1) % 3 == 0:
+            print()
+    # if len(possible_moves) == len(ans):
+    #     print('lol wut r u doing... should be less moves styll....')
 
 def test_remove_opposite():
     pass
@@ -494,17 +521,18 @@ def test_remove_homog_to_homog():
     pass
 
 if __name__ == '__main__':
-    solution_test(4, 'Sort Hoop Level 4', [
-        ['blue', 'blue', 'orange', 'blue'],
-        ['orange', 'orange', 'blue', 'orange'],
-        [],
-        []
-    ])
     test_is_stack_solved_or_empty()
     test_is_stack_homog()
-    test_fill_efficiently()
+    test_fill_homog_efficiently()
     test_clean_up_moves()
     test_remove_empty_solved()
     test_remove_opposite()
     test_remove_incompatibles()
     test_remove_homog_to_homog()
+
+    # solution_test(4, 'Sort Hoop Level 4', [
+    #     ['blue', 'blue', 'orange', 'blue'],
+    #     ['orange', 'orange', 'blue', 'orange'],
+    #     [],
+    #     []
+    # ])

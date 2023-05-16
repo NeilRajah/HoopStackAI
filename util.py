@@ -15,6 +15,7 @@ def subtract_lists(a, b):
     for x in b:
         if x in a:
             a.remove(x)
+    return a
 
 def print_tup(group, msg, elems_per_row=3):
     """All elements of a tuple in a String

@@ -29,19 +29,18 @@ def is_stack_homog(stack):
     :param stack: The stack to check
     :return: Whether there is only one unique color present in the stack
     """
-    uniques = []
-    num_unique = 0
+    if len(stack) == 0:
+        return False
 
-    for item in stack:
+    uniques = [stack[0]]
+
+    for item in stack[1:]:
         if item not in uniques:
-            uniques.append(item)
-            num_unique += 1
-        if num_unique > 1:
             return False
     return True
 
-def fill_efficiently(stacks, move):
-    """Fill stacks efficiently by moving from small homogenous stacks to large ones instead of vice versa
+def fill_homog_efficiently(stacks, move):
+    """Fill homogenous stacks efficiently by moving from small stacks to large ones instead of vice versa
 
     :param stacks: Dictionary of stacks in the game
     :param move: Move of (from, to) stack labels
@@ -50,9 +49,8 @@ def fill_efficiently(stacks, move):
     stack1 = stacks[move[0]]
     stack2 = stacks[move[1]]
 
-    if is_stack_homog(stack1) and is_stack_homog(stack2):
-        if len(stack1) > len(stack2):
-            return move[::-1]  #Flip the move if going from large homog to small homog
+    if is_stack_homog(stack1) and is_stack_homog(stack2) and len(stack1) > len(stack2):
+        return move[::-1]  # Flip the move if going from large homog to small homog
     return move
 
 def clean_up_moves(history):
@@ -82,21 +80,18 @@ def remove_empty_solved(stacks, possible_moves, max_stack_size):
     :param max_stack_size: Greatest number of hoops in a stack
     """
     # Check for empty or solved stacks
-    solved_or_empty = []
-    for stack in stacks:
-        if is_stack_solved_or_empty(stack, max_stack_size):
-            solved_or_empty.append(stack)
+    solved_or_empty = [stack for stack in stacks if is_stack_solved_or_empty(stack, max_stack_size)]
+    # solved_or_empty = []
+    # for stack in stacks:
+    #     if is_stack_solved_or_empty(stack, max_stack_size):
+    #         solved_or_empty.append(stack)
 
     # Eliminate all moves with pieces going from empty or solved pairs
     remove = []
     for move in possible_moves:
-        for stack in solved_or_empty:
-            if move[0] == stack:
-                remove.append(move)
-    if len(remove) > 0:
-        util.subtract_lists(possible_moves, remove)
-
-    return possible_moves
+        if stacks[move[0]] in solved_or_empty:
+            remove.append(move)
+    return util.subtract_lists(possible_moves, remove)
 
 def remove_opposite(possible_moves, prev_moves):
     """Remove the opposite of the last move to avoid getting stuck in a two-move loop
@@ -228,7 +223,7 @@ class Solver:
                 #     moves_str = moves_str + ''.join(str(move)) + ' '
 
                 # Optimize the move if its filling a stack up
-                chosen_move = fill_efficiently(game.stacks, chosen_move)
+                chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
 
                 game.move_pieces(chosen_move)
                 self.history.append(chosen_move)
