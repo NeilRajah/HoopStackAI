@@ -32,8 +32,8 @@ class Game:
     def __init__(self, max_stack_size, name='Game'):
         """Create a Game object
 
-        @param max_stack_size: The max size of a stack
-        @param name: Name of the game
+        :param max_stack_size: The max size of a stack
+        :param name: Name of the game
         """
         self.name = name
         self.max_stack_size = max_stack_size        # Max number of pieces in a stack
@@ -46,19 +46,20 @@ class Game:
     def add_stack(self, stack):
         """Add a stack to the game
 
-        @param stack: Stack of hoops ordered top to bottom (ie. index 0 is top, -1 is bottom)
+        :param stack: Stack of hoops ordered top to bottom (ie. index 0 is top, -1 is bottom)
         """
         if not isinstance(stack, list):
             raise Exception('Stack must be a Python list!')
 
         # Reverse stack so stack.pop() removes the top piece
+        # Add a bottom-up check
         stack.reverse()
         self.stacks.append(stack)
 
     def add_stacks(self, stacks):
         """Add multiple stacks to the game
 
-        @param stacks: List of stacks to add
+        :param stacks: List of stacks to add
         """
         for stack in stacks:
             self.add_stack(stack)
@@ -66,8 +67,8 @@ class Game:
     def add_piece(self, stack_idx, piece):
         """Add a piece to a stack when creating the game
 
-        @param stack_idx: Index of the stack to add the piece to
-        @param piece: Piece to add to stack
+        :param stack_idx: Index of the stack to add the piece to
+        :param piece: Piece to add to stack
         """
         self.stacks[stack_idx].append(piece)
 
@@ -92,8 +93,8 @@ class Game:
     def is_pair_compatible(self, pair_tup):
         """Check if a pair of stacks are compatible
 
-        @param pair_tup: The pair of stacks identified by their stack label
-        @return:
+        :param pair_tup: The pair of stacks identified by their stack label
+        :return: Whether the top hoop of the first stack can be placed on the second stack
         """
         stack1 = self.stacks[pair_tup[0]]
         stack2 = self.stacks[pair_tup[1]]
@@ -123,18 +124,18 @@ class Game:
     def get_num_stacks(self):
         """Get the number of stacks in the game
 
-        @return: Total number of stacks
+        :return: Total number of stacks
         """
         return len(self.stacks)
 
     def is_solved(self):
         """Return if the game is solved or not
 
-        @return: True if all of the stacks are solved or empty, else false
+        :return: True if all of the stacks are solved or empty, else false
         """
-        # return any([solver.is_stack_solved_or_empty(stack, self.max_stack_size) for stack in self.stacks])
-        for stack in self.stacks:
-            if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
-                return False
-        return True
+        return all([solver.is_stack_solved_or_empty(stack, self.max_stack_size) for stack in self.stacks])
+        # for stack in self.stacks:
+        #     if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
+        #         return False
+        # return True
 

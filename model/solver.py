@@ -15,9 +15,9 @@ STACK_LABELS = 'ABCDEFGH'
 def is_stack_solved_or_empty(stack, max_stack_size):
     """Return if the stack is solved, empty or neither
 
-    @param stack: The stack to check
-    @param max_stack_size: The maximum size of a stack
-    @return: True if it is solved (all of same color and of max length) or empty (no hoops)
+    :param stack: The stack to check
+    :param max_stack_size: The maximum size of a stack
+    :return: True if it is solved (all of same color and of max length) or empty (no hoops)
     """
     stack_is_empty = len(stack) == 0
     stack_is_solved = is_stack_homog(stack) and len(stack) == max_stack_size

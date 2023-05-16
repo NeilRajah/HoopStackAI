@@ -84,20 +84,27 @@ def layout_game_scene(disp):
     return screen, stack_locs
 
 def layout_slider(disp: display.Display, num_moves):
+    """Layout the slider on the window
+
+    :param disp: Display to add the slider to
+    :param num_moves: Number of moves of the solution
+    :return: The slider object and its updater
+    :return: The slider object and its updater
+    """
     # Create the slider
     scene_width = disp.screen.get_width()
     scene_height = disp.screen.get_height()
-    disp.screen = pygame.display.set_mode((scene_width, scene_height + SLIDER_HEIGHT//2))
+    disp.screen = pygame.display.set_mode((scene_width, scene_height + SLIDER_HEIGHT))
     thorpy.init(disp.screen, thorpy.theme_classic)
 
     slider = thorpy.SliderWithText("Move number: ",
-                                0, num_moves-1, 0,  # min, max and initial values
-                                int(0.6 * scene_width), "h",  # length and orientation
+                                0, num_moves, 0,  # min, max and initial values
+                                int(0.2 * scene_width), "h",  # length and orientation
                                 dragger_size=(10, 20),
                                 show_value_on_right_side=True,
                                 edit=False)  # allow to edit value as a text
     group = thorpy.Group([slider])
-    group.set_center(scene_width//2, scene_height//2)
+    group.set_center(scene_width//2, scene_height + SLIDER_HEIGHT//2)
 
     return slider, group.get_updater()
 

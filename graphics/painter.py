@@ -10,7 +10,6 @@ import pygame
 BACKGROUND_COLOR = (217, 185, 155)
 
 class Painter:
-
     def __init__(self, num_stacks, max_stack_size, locs):
         """Create a new Painter to draw to the screen
 
@@ -24,17 +23,32 @@ class Painter:
         self.labels = '12345678'[:num_stacks]
         self.font = pygame.font.SysFont('Consolas', layout_manager.HOOP_HEIGHT)
 
-    def draw_stacks(self, screen, stacks, states):
+        self.screen = None
+        self.stacks = None
+        self.stack_states = None
+
+    def update(self, display):
+        """Set the display the painter will draw to
+
+        :param display: Display to draw to
+        """
+        self.screen = display.screen
+        self.stacks = display.game.stacks
+        self.stack_states = display.stack_states
+
+    def draw_stacks(self, display=None):
         """Draw all of the stacks to the screen
 
-        :param screen: Screen to draw to
-        :param stacks: The stacks to draw
-        :param states: The states of the stacks
+        :param display: Display with all of the information about the game
         """
-        for stack, label, loc, state in zip(stacks, self.labels, self.locs, states):
-            self.draw_peg(screen, loc)
-            self.draw_stack_base(screen, label, loc)
-            self.draw_stack(screen, stack, loc, state)
+        if display:
+            self.update(display)
+
+        self.screen.fill(BACKGROUND_COLOR)
+        for stack, label, loc, state in zip(self.stacks, self.labels, self.locs, self.stack_states):
+            self.draw_peg(self.screen, loc)
+            self.draw_stack_base(self.screen, label, loc)
+            self.draw_stack(self.screen, stack, loc, state)
 
     def draw_stack(self, screen, stack, loc, state):
         """Draw a single stack to the screen
