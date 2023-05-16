@@ -2,7 +2,7 @@
 solver
 Author: Neil Balaskandarajah
 Created on: 11/05/2023
-Functions related to solving the game
+Functions related to solving the game as well as the Solver object
 """
 import copy
 import itertools
@@ -199,10 +199,9 @@ class Solver:
             if loop > num_loops:
                 raise Exception('No solution found!')
 
-            print('Loop {}{}'.format(loop, ', solver is backtracking' if self.is_backtracking else ''))
+            # print('Loop {}{}'.format(loop, ', solver is backtracking' if self.is_backtracking else ''))
             if self.is_backtracking:
                 # Undo the last move, reset the pairs to the last set and move forward
-
                 possible_moves = self.prev_possible_moves.pop()
                 if len(self.prev_moves) > 0 and self.prev_moves[-1] in possible_moves:
                     possible_moves.remove(self.prev_moves[-1])
@@ -224,9 +223,9 @@ class Solver:
                 # Choose a move
                 chosen_move = possible_moves[-1]
 
-                moves_str = ''
-                for move in possible_moves:
-                    moves_str = moves_str + ''.join(str(move)) + ' '
+                # moves_str = ''
+                # for move in possible_moves:
+                #     moves_str = moves_str + ''.join(str(move)) + ' '
 
                 # Optimize the move if its filling a stack up
                 chosen_move = fill_efficiently(game.stacks, chosen_move)
@@ -237,12 +236,11 @@ class Solver:
             loop += 1
 
         if game.is_solved():
-            print("*******SOLVED******")
+            # print("*******SOLVED******")
             self.history = clean_up_moves(self.history)
         print('Time to solve: {}s'.format(round(time.time() - t1, 3)))
-        self.display_history()
-        game.display()
-        print(self.history)
+        # self.display_history()
+        # game.display()
         return self.history
 
     def undo(self, game):

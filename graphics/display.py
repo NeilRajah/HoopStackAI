@@ -186,14 +186,6 @@ def set_cursor(stack_idx):
 if __name__ == '__main__':
     pygame.init()
 
-    r = pygame.Color('#ff0000')
-    g = pygame.Color('#a1ff0a')
-    b = pygame.Color('#0aefff')
-    pu = pygame.Color('#580aff')
-    pi = pygame.Color('#ff928b')
-    org = pygame.Color('#ff8700')
-    db = pygame.Color('#147df5')
-
     # game = game.Game(3, name='Simple Test')
     # game.add_stacks([
     #     [b, r, r],
@@ -235,9 +227,9 @@ if __name__ == '__main__':
 
     game = game.Game(3)
     game.add_stacks([
-        [b, r, r],
-        [b, r],
-        [b]
+        ['cyan', 'red', 'red'],
+        ['cyan', 'red'],
+        ['cyan']
     ])
     print(game.stacks)
 

@@ -5,7 +5,7 @@ Created on: 10/05/2023
 Manage the layout
 """
 import pygame
-import display
+from graphics import display
 import thorpy
 
 # Game scene constants
@@ -83,7 +83,7 @@ def layout_game_scene(disp):
     screen = pygame.display.set_mode((screen_width, screen_height))
     return screen, stack_locs
 
-def layout_slider(disp: display.Display, num_moves):
+def layout_slider(disp, num_moves):
     """Layout the slider on the window
 
     :param disp: Display to add the slider to

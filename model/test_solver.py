@@ -10,7 +10,26 @@ from game import Game
 import solver
 from graphics.display import Display
 
-c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red '; pi = 'pink'; pu = 'purp'; o = 'orng'
+c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 'orange'
+
+# game = Game(3, 'Sort Hoop Level 3')
+# game.add_stacks([
+#     [pi, o, pi],
+#     [],
+#     [pi, o, o]
+# ])
+
+game = Game(4, 'Sort Hoop Level 4')
+game.add_stacks([
+    ['blue', 'blue', 'orange', 'blue'],
+    ['orange', 'orange', 'blue', 'orange'],
+    [],
+    []
+])
+
+s = solver.Solver()
+solution = s.solve(game)
+print(solution)
 
 #lvl 1
 # game = Game(3)
@@ -419,13 +438,13 @@ c = 'cyan'; b = 'blue'; g = 'gren'; r = 'red '; pi = 'pink'; pu = 'purp'; o = 'o
 #     [r,pi,b,b],
 #     [pi,c,g,g]
 # ])
-
-game = Game(3)
-game.add_stacks([
-    [b, r, r],
-    [b, r],
-    [b]
-])
+#
+# game = Game(3)
+# game.add_stacks([
+#     [b, r, r],
+#     [b, r],
+#     [b]
+# ])
 
 #Image created game
 # game = Game(4)

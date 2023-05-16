@@ -8,6 +8,13 @@ from graphics import layout_manager
 import pygame
 
 BACKGROUND_COLOR = (217, 185, 155)
+COLORS = {'red': pygame.Color('#ff0000'),
+          'green': pygame.Color('#a1ff0a'),
+          'cyan': pygame.Color('#0aefff'),
+          'purple': pygame.Color('#580aff'),
+          'pink': pygame.Color('#ff928b'),
+          'orange': pygame.Color('#ff8700'),
+          'blue': pygame.Color('#147df5')}
 
 class Painter:
     def __init__(self, num_stacks, max_stack_size, locs):
@@ -60,7 +67,7 @@ class Painter:
         """
         # Start from bottom up
         for j in range(1, len(stack) + 1, 1):
-            color = stack[j - 1]  # CHANGE THIS TO A DICT
+            color = COLORS[stack[j - 1]]
 
             x = loc[0]
             y = loc[1] - j * layout_manager.HOOP_HEIGHT
