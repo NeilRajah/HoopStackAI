@@ -8,7 +8,7 @@ import time
 import pygame
 from game import Game
 import solver
-from graphics.display import Display
+from graphics import display
 
 c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 'orange'
 
@@ -19,14 +19,24 @@ c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 
 #     [pi, o, o]
 # ])
 
+def solution_test(max_stack_size, game_name, stacks):
+    game = Game(max_stack_size, game_name)
+    game.add_stacks(stacks)
+
+    s = solver.Solver()
+    solution = s.solve(game)
+    print(solution)
+    disp = display.Display(game)
+    disp.play_moves(solution)
+
 game = Game(4, 'Sort Hoop Level 4')
+
 game.add_stacks([
     ['blue', 'blue', 'orange', 'blue'],
     ['orange', 'orange', 'blue', 'orange'],
     [],
     []
 ])
-
 s = solver.Solver()
 solution = s.solve(game)
 print(solution)
@@ -459,3 +469,42 @@ print(solution)
 # ]
 # game.add_stacks([stack[::-1] for stack in stacks])
 
+def test_is_stack_solved_or_empty():
+    pass
+
+def test_is_stack_homog():
+    pass
+
+def test_fill_efficiently():
+    pass
+
+def test_clean_up_moves():
+    pass
+
+def test_remove_empty_solved():
+    pass
+
+def test_remove_opposite():
+    pass
+
+def test_remove_incompatibles():
+    pass
+
+def test_remove_homog_to_homog():
+    pass
+
+if __name__ == '__main__':
+    solution_test(4, 'Sort Hoop Level 4', [
+        ['blue', 'blue', 'orange', 'blue'],
+        ['orange', 'orange', 'blue', 'orange'],
+        [],
+        []
+    ])
+    test_is_stack_solved_or_empty()
+    test_is_stack_homog()
+    test_fill_efficiently()
+    test_clean_up_moves()
+    test_remove_empty_solved()
+    test_remove_opposite()
+    test_remove_incompatibles()
+    test_remove_homog_to_homog()
