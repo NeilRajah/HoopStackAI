@@ -11,6 +11,7 @@ import time
 import util
 
 STACK_LABELS = 'ABCDEFGH'
+CHOSEN_MOVE_IDX = -1
 
 def is_stack_solved_or_empty(stack, max_stack_size):
     """Return if the stack is solved, empty or neither
@@ -81,12 +82,7 @@ def remove_empty_solved(stacks, possible_moves, max_stack_size):
     """
     # Check for empty or solved stacks
     solved_or_empty = [stack for stack in stacks if is_stack_solved_or_empty(stack, max_stack_size)]
-    # solved_or_empty = []
-    # for stack in stacks:
-    #     if is_stack_solved_or_empty(stack, max_stack_size):
-    #         solved_or_empty.append(stack)
 
-    # Eliminate all moves with pieces going from empty or solved pairs
     remove = []
     for move in possible_moves:
         if stacks[move[0]] in solved_or_empty:
@@ -98,12 +94,13 @@ def remove_opposite(possible_moves, prev_moves):
 
     :param possible_moves: Possible moves in (from, to) stack label format
     :param prev_moves: List of previous moves
+    :return: The new subset of moves
     """
     if len(prev_moves) > 0:
-        opp = prev_moves[-1][::-1]
+        last_move = prev_moves[CHOSEN_MOVE_IDX]
+        opp = last_move[::-1]
         if opp in possible_moves:
             possible_moves.remove(opp)
-
     return possible_moves
 
 def remove_incompatibles(stacks, possible_moves, max_stack_size):
@@ -120,12 +117,11 @@ def remove_incompatibles(stacks, possible_moves, max_stack_size):
         stack2 = stacks[pair[1]]
         if not game.are_stacks_compatible(stack1, stack2, max_stack_size):
             remove.append(pair)
-    if len(remove) > 0:
-        util.subtract_lists(possible_moves, remove)
 
-    return possible_moves
+    return util.subtract_lists(possible_moves, remove)
+    # return [move for move in possible_moves if game.are_stacks_compatible(stacks[move[0]], stacks[move[1]], max_stack_size)]
 
-def remove_homog_to_homog(stacks, possible_moves):
+def remove_all_same_to_different(stacks, possible_moves):
     """Remove moves coming from a stack with all of the same colors to a stack that's not the same color
 
     :param stacks: Dictionary of stacks
@@ -137,10 +133,8 @@ def remove_homog_to_homog(stacks, possible_moves):
         stack2 = stacks[move[1]]
         if is_stack_homog(stack1) and not is_stack_homog(stack2):
             remove.append(move)
-    if len(remove) > 0:
-        util.subtract_lists(possible_moves, remove)
 
-    return possible_moves
+    return util.subtract_lists(possible_moves, remove)
 
 class Solver:
     def __init__(self):
@@ -166,12 +160,10 @@ class Solver:
         :param game: The game with all of the stacks
         :return: All the possible moves in (from, to) format
         """
-        possible_moves = copy.deepcopy(moves)
-
-        possible_moves = remove_empty_solved(game.stacks, possible_moves, game.max_stack_size)
+        possible_moves = remove_empty_solved(game.stacks, copy.deepcopy(moves), game.max_stack_size)
         possible_moves = remove_opposite(possible_moves, self.prev_moves)
         possible_moves = remove_incompatibles(game.stacks, possible_moves, game.max_stack_size)
-        possible_moves = remove_homog_to_homog(game.stacks, possible_moves)
+        possible_moves = remove_all_same_to_different(game.stacks, possible_moves)
 
         return possible_moves
 
@@ -181,6 +173,7 @@ class Solver:
         :param game: Game to solve
         :return: Moves to play the game
         """
+        game = copy.deepcopy(game)
         # Start the solution by calculating all possible moves
         stack_indices = [i for i in range(len(game.stacks))]
         moves = list(itertools.permutations(stack_indices, 2))  # change to local?
@@ -198,9 +191,9 @@ class Solver:
             if self.is_backtracking:
                 # Undo the last move, reset the pairs to the last set and move forward
                 possible_moves = self.prev_possible_moves.pop()
-                if len(self.prev_moves) > 0 and self.prev_moves[-1] in possible_moves:
-                    possible_moves.remove(self.prev_moves[-1])
-                game.undo()
+                if len(self.prev_moves) > 0 and self.prev_moves[CHOSEN_MOVE_IDX] in possible_moves:
+                    possible_moves.remove(self.prev_moves[CHOSEN_MOVE_IDX])
+                # game.undo()
                 self.is_backtracking = False
 
             else:
@@ -216,7 +209,7 @@ class Solver:
                 self.prev_possible_moves.append(copy.deepcopy(possible_moves))
 
                 # Choose a move
-                chosen_move = possible_moves[-1]
+                chosen_move = possible_moves[0]
 
                 # moves_str = ''
                 # for move in possible_moves:
@@ -225,7 +218,10 @@ class Solver:
                 # Optimize the move if its filling a stack up
                 chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
 
+                # try:
                 game.move_pieces(chosen_move)
+                # except Exception:
+                #     print(loop)
                 self.history.append(chosen_move)
 
             loop += 1

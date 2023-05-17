@@ -27,6 +27,7 @@ class Display:
         max_stack_size = self.game.max_stack_size
 
         # Create the PyGame screen
+        pygame.init()
         pygame.display.set_caption(self.game.name)
         self.screen, self.stack_locs = layout_manager.layout_game_scene(self)
         thorpy.init(self.screen, thorpy.theme_game1)
@@ -104,7 +105,6 @@ class Display:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.update_stacks(mouse_stack, True)
 
@@ -124,7 +124,7 @@ class Display:
             all_stacks.append(deepcopy(game_copy.stacks))
         return all_stacks
 
-    def play_moves(self, moves, animating=False):
+    def play_moves(self, moves, animating=True):
         """Play out a sequence of moves on the screen
 
         :param moves: Sequence of moves to play
@@ -149,13 +149,18 @@ class Display:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    quit()
+                elif not animating and event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT:
+                        move_idx = max(0, move_idx-1)
+                    elif event.key == pygame.K_RIGHT:
+                        move_idx = min(len(moves), move_idx+1)
+                    slider.set_value(move_idx)
 
             if animating:
                 if move_idx >= len(moves):
                     animating = False
                 else:
-                    self.FPS = 3
+                    self.FPS = 4
                     move = moves[move_idx]
 
                     # Simulate a mouse click happening on the stack

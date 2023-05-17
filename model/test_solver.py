@@ -11,8 +11,7 @@ import solver
 from graphics import display
 import itertools
 import copy
-
-c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 'orange'
+import levels
 
 # game = Game(3, 'Sort Hoop Level 3')
 # game.add_stacks([
@@ -24,12 +23,13 @@ c = 'cyan'; b = 'blue'; g = 'green'; r = 'red'; pi = 'pink'; pu = 'purple'; o = 
 def solution_test(max_stack_size, game_name, stacks):
     game = Game(max_stack_size, game_name)
     game.add_stacks(stacks)
+    disp = display.Display(game)
+    # disp.play_game()
 
     s = solver.Solver()
     solution = s.solve(game)
-    print(solution)
-    disp = display.Display(game)
-    disp.play_moves(solution)
+    print_n_at_a_time(solution, 3)
+    disp.play_moves(solution, animating=True)
 
 #lvl 1
 # game = Game(3)
@@ -490,35 +490,56 @@ def test_clean_up_moves():
     if not all([move == sol_move for move, sol_move in zip(ans, solution)]):
         raise AssertionError('Lol not right')
 
-def test_remove_empty_solved():
+def print_n_at_a_time(lis, n, msg=''):
+    if msg != '':
+        print(msg)
+    for i, elem in enumerate(lis):
+        print(elem, end=' ')
+        if (i + 1) % n == 0:
+            print()
+
+def test_remove_empty_solved(printing=False):
     print('Testing remove_empty_solved')
     stacks = [[], [1, 1, 1], [2, 2], [2]]
     possible_moves = list(itertools.permutations([i for i in range(len(stacks))], 2))
     max_stack_size = 3
 
-    print('Possible moves: {}'.format(len(possible_moves)))
-    for i, move in enumerate(possible_moves):
-        print(move, end=' ')
-        if (i+1) % 3 == 0:
-            print()
+    if printing:
+        print('Possible moves: {}'.format(len(possible_moves)))
+        print_n_at_a_time(possible_moves, 3)
 
-    ans = solver.remove_empty_solved(stacks, copy.deepcopy(possible_moves), max_stack_size)
-    print('Answer: {}'.format(len(ans)))
-    for i, move in enumerate(ans):
-        print(move, end=' ')
-        if (i+1) % 3 == 0:
-            print()
-    # if len(possible_moves) == len(ans):
-    #     print('lol wut r u doing... should be less moves styll....')
+        ans = solver.remove_empty_solved(stacks, copy.deepcopy(possible_moves), max_stack_size)
+        print('Answer: {}'.format(len(ans)))
+        print_n_at_a_time(ans, 3)
+        # if len(possible_moves) == len(ans):
+        #     print('lol wut r u doing... should be less moves styll....')
 
 def test_remove_opposite():
-    pass
+    print('Testing remove_opposite')
+    possible_moves = list(itertools.permutations([i for i in range(3)], 2))
+    prev_moves = [(0, 1), (0, 2), (1, 0), (1, 2)]
+    # print_n_at_a_time(possible_moves, 3, msg='possible_moves')
+    # print_n_at_a_time(prev_moves, 3, msg='prev_moves')
+
+    ans = solver.remove_opposite(possible_moves, prev_moves)
+    # print_n_at_a_time(ans, 3, msg='\nanswer')
 
 def test_remove_incompatibles():
-    pass
+    print('Testing remove_incompatibles')
+    possible_moves = list(itertools.permutations([i for i in range(5)], 2))
+    stacks = [[1, 1], [1], [2, 3], [3, 3, 2], []]
+    max_stack_size = 3
 
-def test_remove_homog_to_homog():
-    pass
+    ans = solver.remove_incompatibles(stacks, possible_moves, max_stack_size)
+    # print_n_at_a_time(ans, 3)
+
+def test_remove_all_same_to_diferent():
+    print('Testing remove_all_same_to_different')
+    stacks = [[1, 1], [2, 1], [2, 2]]
+    possible_moves = list(itertools.permutations([i for i in range(len(stacks))], 2))
+
+    ans = solver.remove_all_same_to_different(stacks, possible_moves)
+    # print_n_at_a_time(ans, 3)
 
 if __name__ == '__main__':
     test_is_stack_solved_or_empty()
@@ -528,11 +549,8 @@ if __name__ == '__main__':
     test_remove_empty_solved()
     test_remove_opposite()
     test_remove_incompatibles()
-    test_remove_homog_to_homog()
+    test_remove_all_same_to_diferent()
 
-    # solution_test(4, 'Sort Hoop Level 4', [
-    #     ['blue', 'blue', 'orange', 'blue'],
-    #     ['orange', 'orange', 'blue', 'orange'],
-    #     [],
-    #     []
-    # ])
+    solution_test(4, 'App Level 68', levels.level_68_app)
+    # solution_test(5, 'App Level 69', levels.level_69_app)
+    # solution_test(5, 'App Level 70', levels.level_70_app)

@@ -6,6 +6,7 @@ Painting to the screen
 """
 from graphics import layout_manager
 import pygame
+import thorpy
 
 BACKGROUND_COLOR = (217, 185, 155)
 COLORS = {'red': pygame.Color('#ff0000'),
@@ -27,7 +28,7 @@ class Painter:
         self.num_stacks = num_stacks
         self.max_stack_size = max_stack_size
         self.locs = locs
-        self.labels = '12345678'[:num_stacks]
+        self.labels = '01234567'[:num_stacks]
         self.font = pygame.font.SysFont('Consolas', layout_manager.HOOP_HEIGHT)
 
         self.screen = None
@@ -73,7 +74,7 @@ class Painter:
             y = loc[1] - j * layout_manager.HOOP_HEIGHT
 
             if j == len(stack) and state:
-                y -= 3 * layout_manager.BORDER // 4 + (self.num_stacks - len(stack)) * layout_manager.HOOP_HEIGHT
+                y -= (self.num_stacks - len(stack) - 1) * layout_manager.HOOP_HEIGHT - layout_manager.BORDER//2
 
             rect = pygame.Rect(x, y, layout_manager.TILE_SIZE, layout_manager.HOOP_HEIGHT)
 
