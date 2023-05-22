@@ -28,6 +28,7 @@ class Display:
 
         # Create the PyGame screen
         pygame.init()
+        print(game.name, pygame.get_init())
         pygame.display.set_caption(self.game.name)
         self.screen, self.stack_locs = layout_manager.layout_game_scene(self)
         thorpy.init(self.screen, thorpy.theme_game1)
@@ -138,7 +139,8 @@ class Display:
         stacks_from_solution = self.solution_stacks(moves)
         slider, slider_updater = layout_manager.layout_slider(self, len(moves))
 
-        while True:
+        playing = True
+        while playing:
             self.painter.update(self)
             pygame.display.update()
             slider_updater.update(events=pygame.event.get(),
@@ -147,8 +149,9 @@ class Display:
             self.clock.tick(self.FPS)
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
                     pygame.quit()
+                    playing = False
                 elif not animating and event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         move_idx = max(0, move_idx-1)
@@ -158,6 +161,7 @@ class Display:
 
             if animating:
                 if move_idx >= len(moves):
+                    self.stack_states = [False] * self.game.get_num_stacks()
                     animating = False
                 else:
                     self.FPS = 4

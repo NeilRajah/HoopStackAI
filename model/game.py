@@ -28,6 +28,17 @@ def are_stacks_compatible(stack1, stack2, max_stack_size):
         return True
     return False
 
+def get_max_stack_size(stacks):
+    item = None
+    max_stack_size = 0
+    for stack in stacks:
+        for hoop in stack:
+            if item is None:
+                item = hoop
+            if hoop == item:
+                max_stack_size += 1
+    return max_stack_size
+
 class Game:
     def __init__(self, max_stack_size, name='Game'):
         """Create a Game object
@@ -82,7 +93,7 @@ class Game:
         """
         if not self.is_pair_compatible(pair_tup) and not bypassing:
             msg = "Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1])
-            msg = msg + "\n{} | {}".format(self.stacks[pair_tup[0]], self.stacks[pair_tup[1]])
+            msg += "\n[{}, {}]".format(self.stacks[pair_tup[0]], self.stacks[pair_tup[1]])
             raise Exception(msg)
 
         # Move from top of the first stack to the second

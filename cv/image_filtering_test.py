@@ -10,6 +10,7 @@ from image_filtering import *
 from os import listdir
 import logging
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 def thresholding_window(filename):
     #Create the image and convert it to HSV
@@ -323,12 +324,12 @@ if __name__ == '__main__':
     DIR = '../tests//'
     # images = [scale_image(cv2.imread(DIR+file, cv2.IMREAD_COLOR), 0.5) for file in listdir(DIR)]
     # logging.basicConfig(level=logging.DEBUG)
-    images = [scale_image(cv2.imread('../tests/lvl2.png', cv2.IMREAD_COLOR), 0.5)]
+    # images = [scale_image(cv2.imread('../tests/lvl2.png', cv2.IMREAD_COLOR), 0.5)]
 
     # Tests
-    # thresholding_window('game.png')
-    test_filter_bg(deepcopy(images))
-    test_get_stack_bounds(deepcopy(images))
+    thresholding_window('game.png')
+    # test_filter_bg(deepcopy(images))
+    # test_get_stack_bounds(deepcopy(images))
     # test_get_click_locations(deepcopy(images))
     # test_get_stack_images(deepcopy(images))
     # test_thresh_color(deepcopy(images))

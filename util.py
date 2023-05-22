@@ -31,4 +31,19 @@ def print_tup(group, msg, elems_per_row=3):
         # if i % 5 == 0: elements = elements + '\n'
     print("{}{}".format(msg, elements))
 
-# Num uniques
+def print_n_at_a_time(lis, n, msg=''):
+    """Print out a list with each line containing n elements
+
+    :param lis: List of elements to print
+    :param n: Number of elements to print
+    :param msg: Message to print before printing the list
+    """
+    if len(lis) == 0:
+        print('empty list')
+    if msg != '':
+        print(msg)
+    for i, elem in enumerate(lis):
+        print(elem, end=' ')
+        if (i + 1) % n == 0:
+            print()
+    print()
