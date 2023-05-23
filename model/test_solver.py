@@ -75,9 +75,9 @@ def test_remove_opposite():
 def test_remove_incompatibles():
     print('Testing remove_incompatibles')
     # stacks = [[1, 1, 1], []]
-    stacks = [[2, 2], [1, 1, 1]]
+    stacks = levels.level_16
     possible_moves = list(itertools.permutations([i for i in range(len(stacks))], 2))
-    max_stack_size = 3
+    max_stack_size = game.get_max_stack_size(stacks)
 
     ans = solver.remove_incompatibles(stacks, possible_moves, max_stack_size)
     print_n_at_a_time(ans, 3)
@@ -110,18 +110,19 @@ def solution_test(max_stack_size, game_name, stacks, num_loops=100, animating=Fa
     disp.play_moves(solution, animating=animating)
 
 def test_levels(testcases, num_loops=100, animating=False):
+    print(game.get_max_stack_size(testcases[0]))
     test_game = game.Game(game.get_max_stack_size(testcases[0]), stacks=testcases[0])
     disp = display.Display(test_game)
-    s = solver.Solver()
 
     for case in testcases:
         test_game = game.Game(game.get_max_stack_size(case), stacks=case)
         disp.game = test_game
         disp.setup()
 
-        solution = s.solve(test_game, num_loops=num_loops)
-        print_n_at_a_time(solution, 3)
+        solution = solver.solve(test_game, num_loops=num_loops)
+        print_n_at_a_time(solution, 5)
         disp.play_moves(solution, animating=animating)
+        # disp.play_game()
 
 if __name__ == '__main__':
     # test_is_stack_solved_or_empty()
@@ -130,7 +131,7 @@ if __name__ == '__main__':
     # test_clean_up_moves()
     # test_remove_empty_solved()
     # test_remove_opposite()
-    # test_remove_incompatibles()
+    test_remove_incompatibles()
     # test_remove_all_same_to_diferent()
     # test_remove_infinite_loops()
 
@@ -148,9 +149,9 @@ if __name__ == '__main__':
                  # levels.level_6,
                  # levels.level_7,
                  # levels.level_11,
-                 levels.level_68_app,
+                 levels.level_16
                  # levels.level_70_app
-                ], animating=True)
+                ], num_loops=1000, animating=False)
     # print(game.get_max_stack_size(levels.level_1))
     # solution_test(3, 'Level 1', levels.level_1)
     # solution_test(3, 'Level 2', levels.level_2)

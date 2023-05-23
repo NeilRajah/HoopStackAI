@@ -125,7 +125,7 @@ class Display:
         game_copy = deepcopy(self.game)
         all_stacks = [deepcopy(game_copy.stacks)]
         for move in moves:
-            game_copy.move_pieces(move, bypassing=True)
+            game_copy.move_pieces(move)
             all_stacks.append(deepcopy(game_copy.stacks))
         return all_stacks
 
