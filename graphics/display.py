@@ -23,17 +23,22 @@ class Display:
         @param game: Game object to visualize
         """
         self.game = game
-        num_stacks = self.game.get_num_stacks()
-        max_stack_size = self.game.max_stack_size
+        self.screen = None
+        self.stack_locs = None
+        self.stack_states = None
+        self.clock = None
+        self.painter = None
 
+        self.setup()
+
+    def setup(self):
         # Create the PyGame screen
+        self.stack_states = [False] * self.game.get_num_stacks()
         pygame.init()
-        print(game.name, pygame.get_init())
         pygame.display.set_caption(self.game.name)
         self.screen, self.stack_locs = layout_manager.layout_game_scene(self)
         thorpy.init(self.screen, thorpy.theme_game1)
-        self.stack_states = [False] * num_stacks
-        self.painter = painter.Painter(num_stacks, max_stack_size, self.stack_locs)
+        self.painter = painter.Painter(self.game.get_num_stacks(), self.game.max_stack_size, self.stack_locs)
         self.clock = pygame.time.Clock()
 
     def get_stack_from_mouse(self):
@@ -90,7 +95,6 @@ class Display:
         """
         if stack_idx is None:
             return
-
         self.update_stack_states(stack_idx, event)
 
     def play_game(self):
@@ -150,7 +154,8 @@ class Display:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
-                    pygame.quit()
+                    # pygame.quit()
+                    print('quitting...')
                     playing = False
                 elif not animating and event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:

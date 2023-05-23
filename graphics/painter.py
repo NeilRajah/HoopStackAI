@@ -9,6 +9,7 @@ import pygame
 import thorpy
 
 BACKGROUND_COLOR = (217, 185, 155)
+# BACKGROUND_COLOR = (255, 255, 255)
 COLORS = {'red': pygame.Color('#ff0000'),
           'green': pygame.Color('#a1ff0a'),
           'cyan': pygame.Color('#0aefff'),
@@ -40,6 +41,7 @@ class Painter:
 
         :param display: Display to draw to
         """
+        self.locs = display.stack_locs
         self.screen = display.screen
         self.stacks = display.game.stacks
         self.stack_states = display.stack_states

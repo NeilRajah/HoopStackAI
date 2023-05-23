@@ -40,7 +40,7 @@ def get_max_stack_size(stacks):
     return max_stack_size
 
 class Game:
-    def __init__(self, max_stack_size, name='Game'):
+    def __init__(self, max_stack_size, name='Game', stacks=None):
         """Create a Game object
 
         :param max_stack_size: The max size of a stack
@@ -50,7 +50,9 @@ class Game:
         self.max_stack_size = max_stack_size        # Max number of pieces in a stack
 
         # Attributes for solving
-        self.stacks = []                # Stacks containing pieces
+        self.stacks = []
+        if stacks is not None:
+            self.add_stacks(stacks)
 
     #---Creation---#
 

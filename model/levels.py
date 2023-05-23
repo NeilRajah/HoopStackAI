@@ -37,9 +37,14 @@ level_70_app = [
 ]
 
 level_1 = [[c], [c, c]]
-level_2 = [[c, r, r], [c, c, r], []]
+level_2 = [[pi, c, c], [pi, pi, c], []]
+level_3 = [[pi, b, pi], [], [pi, b, b]]
 level_4 = [[c, c, r, c], [r, r, c, r], [], []]
-level_5 = [[c, r, c, c, r], [], [r, c, r, c, r], []]
+level_5 = [[pi, pu, c], [c, pi, pu], [pu, c, pi], [], []]
+level_6 = [[pu, g, c], [], [pu, pi, pi], [g, pi, pu], [], [c, g, c]]
+level_7 = [[pu, g, r], [], [], [pu, r, g], [r, pi, pu], [pi, c, pi], [c, g, c]]
+level_8 = [[b, g, b], [r, o, pi], [b, r, c], [o, g, o], [c, g, c], [], [], [pi, r, pi]]
+level_11 = [[r, c], [g], [g, c, pi], [r, pi, pu], [g, c, r], [pu, b, b], [pi, b, pu]]
 
 #lvl 6, inefficiently fills stacks
 # game = Game(3)

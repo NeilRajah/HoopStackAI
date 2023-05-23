@@ -7,7 +7,7 @@ AI for solving hoop stack game
 import time
 import pygame
 import game
-from game import Game
+# from game import Game
 import solver
 from graphics import display
 import itertools
@@ -98,8 +98,9 @@ def test_remove_infinite_loops():
     print_n_at_a_time(ans, 3)
 
 def solution_test(max_stack_size, game_name, stacks, num_loops=100, animating=False):
-    game = Game(max_stack_size, game_name)
+    game = game.Game(max_stack_size, game_name)
     game.add_stacks(stacks)
+
     disp = display.Display(game)
     # disp.play_game()
 
@@ -107,6 +108,20 @@ def solution_test(max_stack_size, game_name, stacks, num_loops=100, animating=Fa
     solution = s.solve(game, num_loops=num_loops)
     print_n_at_a_time(solution, 3)
     disp.play_moves(solution, animating=animating)
+
+def test_levels(testcases, num_loops=100, animating=False):
+    test_game = game.Game(game.get_max_stack_size(testcases[0]), stacks=testcases[0])
+    disp = display.Display(test_game)
+    s = solver.Solver()
+
+    for case in testcases:
+        test_game = game.Game(game.get_max_stack_size(case), stacks=case)
+        disp.game = test_game
+        disp.setup()
+
+        solution = s.solve(test_game, num_loops=num_loops)
+        print_n_at_a_time(solution, 3)
+        disp.play_moves(solution, animating=animating)
 
 if __name__ == '__main__':
     # test_is_stack_solved_or_empty()
@@ -123,13 +138,26 @@ if __name__ == '__main__':
     # test_game.add_stacks([[1, 1, 1], []])
     # print(test_game.is_solved())
 
+    #---Create one display and change the game for each test---#
+    test_levels([
+                 # levels.level_1,
+                 # levels.level_2,
+                 # levels.level_3,
+                 # levels.level_4,
+                 # levels.level_5,
+                 # levels.level_6,
+                 # levels.level_7,
+                 # levels.level_11,
+                 levels.level_68_app,
+                 # levels.level_70_app
+                ], animating=True)
     # print(game.get_max_stack_size(levels.level_1))
     # solution_test(3, 'Level 1', levels.level_1)
     # solution_test(3, 'Level 2', levels.level_2)
     # solution_test(4, 'Level 4', levels.level_4)
     # solution_test(5, 'Level 5', levels.level_5)
 
-    solution_test(4, 'App Level 68', levels.level_68_app, animating=True)
+    # solution_test(4, 'App Level 68', levels.level_68_app, animating=True)
     # solution_test(5, 'App Level 69', levels.level_69_app)
     # x = [1, 2, 3]
     # print(x[:-1], x + [4])
