@@ -29,7 +29,8 @@ class Display:
         self.clock = None
         self.painter = None
 
-        self.setup()
+        if game:
+            self.setup()
 
     def setup(self):
         # Create the PyGame screen
@@ -140,7 +141,7 @@ class Display:
         self.FPS = 50
 
         self.painter.update(self)
-        stacks_from_solution = self.solution_stacks(moves)
+        # stacks_from_solution = self.solution_stacks(moves)
         slider, slider_updater = layout_manager.layout_slider(self, len(moves))
 
         playing = True
@@ -169,7 +170,12 @@ class Display:
                     self.stack_states = [False] * self.game.get_num_stacks()
                     animating = False
                 else:
-                    self.FPS = 4
+                    if len(moves) > 50:
+                        self.FPS = 30
+                    elif len(moves) > 20:
+                        self.FPS = 10
+                    else:
+                        self.FPS = 4
                     move = moves[move_idx]
 
                     # Simulate a mouse click happening on the stack
@@ -185,7 +191,7 @@ class Display:
             else:
                 self.FPS = 50
                 # Show a snapshot of the solution with the slider
-                self.game.stacks = stacks_from_solution[slider.get_value()]
+                # self.game.stacks = stacks_from_solution[slider.get_value()]
 
 def set_cursor(stack_idx):
     """Assign the cursor based on the position of the mouse

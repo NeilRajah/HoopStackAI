@@ -60,17 +60,33 @@ def clean_up_moves(history):
     :param history: All moves which have been performed
     :return: The entire set of movements without redundant moves
     """
-    idx = 0
-    while idx < len(history)-1:
-        start = history[idx]
-        end = history[idx+1]
+    # Remove consecutive and non-consecutive opposites
+    removals = []
+    # print(history)
+    for i, move in enumerate(history):
+        for j, future_move in enumerate(history[i+1:]):
+            if move[0] in future_move and move[1] not in future_move \
+                or move[1] in future_move and move[0] not in future_move:
+                # print(move, future_move)
+                break
+            elif move[1] == future_move[0] and move[0] == future_move[1]:
+                removals.append(i)
+                removals.append(i+j+1)
+                break
+    # print(removals)
+    history = [history[i] for i in range(len(history)) if i not in removals]
 
-        # turn AB BC to AC
-        if start[1] == end[0]:
-            history.pop(idx)
-            history.pop(idx)
-            history.insert(idx, (start[0], end[1]))
-        idx += 1
+    # idx = 0
+    # while idx < len(history)-1:
+    #     start = history[idx]
+    #     end = history[idx+1]
+    #
+    #     # turn AB BC to AC
+    #     if start[1] == end[0] and start[0] != end[1]:
+    #         history.pop(idx)
+    #         history.pop(idx)
+    #         history.insert(idx, (start[0], end[1]))
+    #     idx += 1
     return history
 
 def remove_empty_solved(stacks, possible_moves, max_stack_size):
@@ -173,12 +189,25 @@ def filter_moves(moves, game):
     # util.print_n_at_a_time(game.stacks, 1)
     # util.print_n_at_a_time(moves, 4)
     # print(game.max_stack_size)
+    # print(game.stacks)
+    # print(moves)
     possible_moves = remove_incompatibles(game.stacks, moves, game.max_stack_size)
-    # possible_moves = remove_empty_solved(game.stacks, possible_moves, game.max_stack_size)
-    # possible_moves = remove_all_same_to_different(game.stacks, possible_moves)
-    # possible_moves = moves
+    # print(possible_moves)
+    possible_moves = remove_empty_solved(game.stacks, possible_moves, game.max_stack_size)
+    possible_moves = remove_all_same_to_different(game.stacks, possible_moves)
 
     return possible_moves
+
+def score_change(prev_stacks, current_stacks):
+    pass
+
+def score_valid_moves(valid_moves, game):
+    scores = []
+    for move in valid_moves:
+        prev_stacks = copy.deepcopy(game.stacks)
+        game.move_pieces(move)
+        scores.append(score_change(prev_stacks, game.stacks))
+        game.move_pieces(move[::-1], bypassing=True)
 
 def solve(game, num_loops=10000):
     """Solve the puzzle
@@ -188,14 +217,13 @@ def solve(game, num_loops=10000):
     :return: Moves to play the game
     """
     game = copy.deepcopy(game)
-    # Start the solution by calculating all possible moves
     stack_indices = [i for i in range(game.get_num_stacks())]
     moves = list(itertools.permutations(stack_indices, 2))
-    # util.print_n_at_a_time(moves, 4)
 
-    move_history = []           # All the moves the solver has performed
-    possible_moves = {}         # All of the possible moves the can do in a given situation
-    stack_history = []          # The stack states throughout the solution
+    move_history = []                               # All the moves the solver has performed
+    possible_moves = {}                             # All of the possible moves the can do in a given situation
+    STARTING_STACKS = copy.deepcopy(game.stacks)    # Starting stack configuration
+    stack_history = [STARTING_STACKS]               # The stack states the solution has passed through
 
     loop = 0
     while not game.is_solved():
@@ -209,24 +237,31 @@ def solve(game, num_loops=10000):
         # Generate all possible moves and filter out those that are invalid
         if state_str not in possible_moves.keys():
             possible_moves[state_str] = filter_moves(moves, game)
-        try:
-            if len(possible_moves[state_str]) == 0:
+
+        # No moves
+        if len(possible_moves[state_str]) == 0:
+            try:
+                if len(stack_history) == 0:
+                    stack_history.append(copy.deepcopy(STARTING_STACKS))
                 game.stacks = stack_history.pop()
-            else:
-                # There are possible moves that can be performed
-                stack_history.append(copy.deepcopy(game.stacks))
+            except IndexError:
+                print('Stack history was empty')
+        else:
+            # There are possible moves that can be performed
+            stack_history.append(copy.deepcopy(game.stacks))
 
-                chosen_move = possible_moves[state_str].pop()
+            # if any((move[0] == move[1] for move in possible_moves[state_str])):
+            #     print('identical moves!')
+            #     print(possible_moves)
 
-                # Optimize the move if its filling a stack up
-                chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
+            chosen_move = possible_moves[state_str].pop(0)
+            # print(f'Loop {loop}, choosing move')
 
-                game.move_pieces(chosen_move)
-                move_history.append(chosen_move)
-        except Exception:
-            print('oopies on loop {}... Lol'.format(loop))
-            break
-            # return move_history
+            # Optimize the move if its filling a stack up
+            chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
+
+            game.move_pieces(chosen_move)
+            move_history.append(chosen_move)
 
     move_history = clean_up_moves(move_history)
     return move_history

@@ -38,12 +38,13 @@ def print_n_at_a_time(lis, n, msg=''):
     :param n: Number of elements to print
     :param msg: Message to print before printing the list
     """
-    if len(lis) == 0:
-        print('empty list')
     if msg != '':
         print(msg)
-    for i, elem in enumerate(lis):
-        print(elem, end=' ')
-        if (i + 1) % n == 0:
-            print()
+    if len(lis) == 0:
+        print('empty list')
+    else:
+        for i, elem in enumerate(lis):
+            print(elem, end=' ')
+            if (i + 1) % n == 0:
+                print()
     print()

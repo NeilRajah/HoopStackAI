@@ -45,6 +45,8 @@ class Painter:
         self.screen = display.screen
         self.stacks = display.game.stacks
         self.stack_states = display.stack_states
+        self.num_stacks = display.game.get_num_stacks()
+        self.max_stack_size = display.game.max_stack_size
 
     def draw_stacks(self, display=None):
         """Draw all of the stacks to the screen
@@ -75,8 +77,9 @@ class Painter:
             x = loc[0]
             y = loc[1] - j * layout_manager.HOOP_HEIGHT
 
+            # If the stack is selected, draw the top hoop higher than the rest
             if j == len(stack) and state:
-                y -= (self.num_stacks - len(stack) - 1) * layout_manager.HOOP_HEIGHT - layout_manager.BORDER//2
+                y -= (self.max_stack_size - len(stack)) * layout_manager.HOOP_HEIGHT + 3*layout_manager.BORDER//4
 
             rect = pygame.Rect(x, y, layout_manager.TILE_SIZE, layout_manager.HOOP_HEIGHT)
 

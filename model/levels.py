@@ -45,8 +45,8 @@ level_6 = [[pu, g, c], [], [pu, pi, pi], [g, pi, pu], [], [c, g, c]]
 level_7 = [[pu, g, r], [], [], [pu, r, g], [r, pi, pu], [pi, c, pi], [c, g, c]]
 level_8 = [[b, g, b], [r, o, pi], [b, r, c], [o, g, o], [c, g, c], [], [], [pi, r, pi]]
 level_11 = [[r, c], [g], [g, c, pi], [r, pi, pu], [g, c, r], [pu, b, b], [pi, b, pu]]
-level_16 = [[], [g, pu, g], [c, pu, r, pi], [g, c, pi, c, pu],
-            [pi, r, pu, r, r], [c, pi, r, pu, g], [c, pi, g]]
+level_16 = [[r, c], [c, g], [b, g, pi], [r, pi, pu],
+            [c, r], [g, pu, b], [pi, pu, b]]
 
 #lvl 6, inefficiently fills stacks
 # game = Game(3)
