@@ -5,7 +5,6 @@ Created on: 10/05/2023
 Manage the layout
 """
 import pygame
-from graphics import display
 import thorpy
 
 # Game scene constants
@@ -23,8 +22,8 @@ SLIDER_HEIGHT = int(0.5 * TILE_SIZE)        # Height of the slider
 def layout_game_scene(disp):
     """Create the layout of the game window
 
-    @param disp: object
-    @return: The screen and the stack locations
+    :param disp: object
+    :return: The screen and the stack locations
     """
     num_stacks = disp.game.get_num_stacks()
     screen_width = 2 * BORDER - PADDING
@@ -109,4 +108,5 @@ def layout_slider(disp, num_moves):
     return slider, group.get_updater()
 
 def layout_move_history_window(disp):
+    # Roadmap feature
     pass

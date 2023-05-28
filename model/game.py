@@ -4,12 +4,11 @@ Author: Neil Balaskandarajah
 Created on: 18/06/2020
 Game class with all interactions
 """
-import time
-import itertools
-import util
-import random
 import model.solver as solver
-import matplotlib.pyplot as plt
+
+class IncompatibleStackError(Exception):
+    """Raised when a move is attempted between two stacks that are not compatible"""
+    pass
 
 def are_stacks_compatible(stack1, stack2, max_stack_size):
     """Return if a move can be done between the two stacks
@@ -29,6 +28,12 @@ def are_stacks_compatible(stack1, stack2, max_stack_size):
     return False
 
 def get_max_stack_size(stacks):
+    """Get the maximum number of hoops in a stack
+
+    :param stacks: Stacks to analyze
+    :return: Maximum number of hoops in a single stack
+    """
+    # Determine the max stack size by counting the number of a given hoop throughout all of the stacks
     item = None
     max_stack_size = 0
     for stack in stacks:
@@ -62,7 +67,7 @@ class Game:
         :param stack: Stack of hoops ordered top to bottom (ie. index 0 is top, -1 is bottom)
         """
         if not isinstance(stack, list):
-            raise Exception('Stack must be a Python list!')
+            raise TypeError('Stack must be a Python list!')
 
         # Reverse stack so stack.pop() removes the top piece
         # Add a bottom-up check
@@ -93,10 +98,11 @@ class Game:
         :param pair_tup: The pair of stacks in (from, to) format (ie. move_pieces (x,y) moves from stack x to stack y)
         :param bypassing: Whether the rules should be considered or not (Rules not considered if true)
         """
-        if not self.is_pair_compatible(pair_tup) and not bypassing:
-            msg = "Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1])
+        if not bypassing and not self.is_pair_compatible(pair_tup):
+            msg = self.name
+            msg += ":Stacks {} and {} are not compatible!".format(pair_tup[0], pair_tup[1])
             msg += "\n[{}, {}]".format(self.stacks[pair_tup[0]], self.stacks[pair_tup[1]])
-            raise Exception(msg)
+            raise IncompatibleStackError(msg)
 
         # Move from top of the first stack to the second
         a = self.stacks[pair_tup[0]]
@@ -116,7 +122,6 @@ class Game:
 
     def display(self):
         """Print the game out to the console"""
-        # print(self.stacks)
         s = ''
         for stack in self.stacks:
             if len(stack) > 0:
@@ -147,8 +152,3 @@ class Game:
         :return: True if all of the stacks are solved or empty, else false
         """
         return all([solver.is_stack_solved_or_empty(stack, self.max_stack_size) for stack in self.stacks])
-        # for stack in self.stacks:
-        #     if not solver.is_stack_solved_or_empty(stack, self.max_stack_size):
-        #         return False
-        # return True
-

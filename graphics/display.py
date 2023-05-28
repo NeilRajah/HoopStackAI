@@ -14,26 +14,24 @@ from copy import deepcopy
 import thorpy
 
 class Display:
-    # Constants
-    FPS = 50        # Update rate of the screen
-
-    def __init__(self, game: game.Game):
+    def __init__(self, game: game.Game=None):
         """Create a new display to view the state of the game
 
         @param game: Game object to visualize
         """
-        self.game = game
-        self.screen = None
-        self.stack_locs = None
-        self.stack_states = None
-        self.clock = None
-        self.painter = None
+        self.game = game                # The game to visualize
+        self.screen = None              # The screen to draw to
+        self.stack_locs = None          # The locations of each stack for drawing
+        self.stack_states = None        # The states of each stack for drawing (selected T/F)
+        self.clock = None               # PyGame clock for drawing
+        self.painter = None             # Painter object for drawing
+        self.FPS = 30                   # Screen update rate
 
         if game:
             self.setup()
 
     def setup(self):
-        # Create the PyGame screen
+        """Set up the related PyGame and thorpy assets"""
         self.stack_states = [False] * self.game.get_num_stacks()
         pygame.init()
         pygame.display.set_caption(self.game.name)
@@ -45,13 +43,11 @@ class Display:
     def get_stack_from_mouse(self):
         """Get the stack the mouse is currently over
 
-        @return: The index of the stack
+        :return: The index of the stack the mouse is currently over (None if not over a stack)
         """
         # Could change this to using a pygame rect and collisions
         x, y = pygame.mouse.get_pos()
-        i = -1
-        for stack, loc in zip(self.game.stacks, self.stack_locs):
-            i += 1
+        for i, (stack, loc) in enumerate(zip(self.game.stacks, self.stack_locs)):
             within_x = loc[0] <= x <= loc[0] + layout_manager.HOOP_WIDTH
             within_y = loc[1] >= y >= loc[1] - layout_manager.HOOP_HEIGHT * self.game.max_stack_size
             if within_x and within_y:
@@ -81,9 +77,7 @@ class Display:
 
                 # Else if there is a selected stack, make a move between the two stacks if they are compatible
                 else:
-                    stack1_idx = idx_already_selected_stack
-                    stack2_idx = stack_idx
-                    pair_tup = (stack1_idx, stack2_idx)
+                    pair_tup = (idx_already_selected_stack, stack_idx)
                     if self.game.is_pair_compatible(pair_tup):
                         self.game.move_pieces(pair_tup)
                         self.stack_states = [False] * self.game.get_num_stacks()
@@ -98,12 +92,15 @@ class Display:
             return
         self.update_stack_states(stack_idx, event)
 
-    def play_game(self):
-        """Play the game"""
+    def play_game(self, quit_on_finish=False):
+        """Play the game
+
+        :param quit_on_finish: Whether to quit the application on finish or not
+        """
         self.painter.update(self)
 
         while True:
-            self.clock.tick(Display.FPS)
+            self.clock.tick(30)
 
             mouse_stack = self.get_stack_from_mouse()
             set_cursor(mouse_stack)
@@ -111,6 +108,8 @@ class Display:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    if quit_on_finish:
+                        quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.update_stacks(mouse_stack, True)
 
@@ -126,8 +125,12 @@ class Display:
         game_copy = deepcopy(self.game)
         all_stacks = [deepcopy(game_copy.stacks)]
         for move in moves:
-            game_copy.move_pieces(move)
-            all_stacks.append(deepcopy(game_copy.stacks))
+            try:
+                game_copy.move_pieces(move)
+                all_stacks.append(deepcopy(game_copy.stacks))
+            except game.IncompatibleStackError:
+                print('Encountered bad move when creating solution stacks')
+                break
         return all_stacks
 
     def play_moves(self, moves, animating=True):
@@ -138,14 +141,20 @@ class Display:
         """
         move_idx = 0            # Index of the current move being animated
         selecting = True        # Whether the animator is selecting a stack or not
-        self.FPS = 50
 
+        self.FPS = 30
         self.painter.update(self)
-        # stacks_from_solution = self.solution_stacks(moves)
+
+        # Create all of the stacks
+        stacks_from_solution = self.solution_stacks(moves)      # Can change this system to play moves from history
+
+        # Only play as many moves as there are stacks from the solution (cuts off incorrect solutions)
+        moves = moves[:len(stacks_from_solution)-1]
         slider, slider_updater = layout_manager.layout_slider(self, len(moves))
 
         playing = True
         while playing:
+            # Draw to the screen
             self.painter.update(self)
             pygame.display.update()
             slider_updater.update(events=pygame.event.get(),
@@ -155,27 +164,26 @@ class Display:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
-                    # pygame.quit()
                     print('quitting...')
                     playing = False
+
+                # Move forwards and backwards between the moves
                 elif not animating and event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT:
-                        move_idx = max(0, move_idx-1)
-                    elif event.key == pygame.K_RIGHT:
-                        move_idx = min(len(moves), move_idx+1)
-                    slider.set_value(move_idx)
+                    if event.key == pygame.K_LEFT and move_idx > 0:
+                        move_idx -= 1
+                    elif event.key == pygame.K_RIGHT and move_idx < len(moves):
+                        move_idx += 1
+                    slider.set_value(move_idx-1)
 
             if animating:
-                if move_idx >= len(moves):
-                    self.stack_states = [False] * self.game.get_num_stacks()
-                    animating = False
-                else:
+                # If there are moves to show
+                if move_idx < len(moves):
                     if len(moves) > 50:
                         self.FPS = 30
                     elif len(moves) > 20:
                         self.FPS = 10
                     else:
-                        self.FPS = 4
+                        self.FPS = 6
                     move = moves[move_idx]
 
                     # Simulate a mouse click happening on the stack
@@ -186,80 +194,25 @@ class Display:
                         self.update_stacks(move[1], pygame.MOUSEBUTTONUP)
                         move_idx += 1
                         selecting = True
-
                     slider.set_value(move_idx+1)
+
+                # No more moves
+                else:
+                    print('Stopping animation')
+                    self.stack_states = [False] * self.game.get_num_stacks()
+                    animating = False
+
             else:
                 self.FPS = 50
-                # Show a snapshot of the solution with the slider
-                # self.game.stacks = stacks_from_solution[slider.get_value()]
+                # Show the step in the solution corresponding to the position of the slider
+                self.game.stacks = stacks_from_solution[slider.get_value()]
 
 def set_cursor(stack_idx):
     """Assign the cursor based on the position of the mouse
 
-    @param stack_idx: Index of the stack
+    :param stack_idx: Index of the stack
     """
     if stack_idx is None:
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     else:
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-
-if __name__ == '__main__':
-    pygame.init()
-
-    # game = game.Game(3, name='Simple Test')
-    # game.add_stacks([
-    #     [b, r, r],
-    #     [b, r],
-    #     [b]
-    # ])
-
-    # game = game.Game(5, name='App Level 60')
-    # game.add_stacks([
-    #     [g, r, b, r, r],
-    #     [r, g, pu, b, b],
-    #     [b, g],
-    #     [g, r, pu, pi, pi],
-    #     [g, pi, pi, pu, pu],
-    #     [b, pu, pi]
-    # ])
-
-    # game = game.Game(5, name='App Level 63')
-    # game.add_stacks([
-    #     [r, b, b, pi, pi],
-    #     [g, g, db],
-    #     [b, r, pi, pu, b],
-    #     [db, r, pi, pi, g],
-    #     [db, g, db, pu, pu],
-    #     [pu, db, r, pu, r],
-    #     [g, b],
-    #     []
-    # ])
-
-    # game = game.Game(5, name='App Level 64')
-    # game.add_stacks([
-    #     [r, pi, b],
-    #     [g, pu, g, pu, r],
-    #     [r, pi],
-    #     [b, r, b, pu, pu],
-    #     [pi, r, pi, g, g],
-    #     [g, pu, b, b, pi]
-    # ])
-
-    game = game.Game(3)
-    game.add_stacks([
-        ['cyan', 'red', 'red'],
-        ['cyan', 'red'],
-        ['cyan']
-    ])
-    print(game.stacks)
-
-    pygame.init()
-    game.display()
-    t1 = time.time()
-    disp = Display(game)
-    s = solver.Solver()
-    solution = s.solve(deepcopy(game))
-    # solution = [(1, 2), (0, 2), (1, 0)]
-
-    # disp.run()
-    disp.play_moves(solution, animating=True)

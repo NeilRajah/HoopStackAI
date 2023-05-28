@@ -2,12 +2,11 @@
 solver
 Author: Neil Balaskandarajah
 Created on: 11/05/2023
-Functions related to solving the game as well as the Solver object
+Solving the game with backtracking
 """
 import copy
 import itertools
 import model.game as game
-import time
 import util
 
 STACK_LABELS = 'ABCDEFGH'
@@ -54,32 +53,68 @@ def fill_homog_efficiently(stacks, move):
         return move[::-1]  # Flip the move if going from large homog to small homog
     return move
 
-def clean_up_moves(history):
-    """Streamline the solution by removing redundant moves (ie. AB, BC -> AC)
+def clean_up_opposites(history):
+    """Remove moves that are opposite one another as they have no impact on the game
+    ie. BC AB BA AC --> BC AC
+    ie. BC AD CB DB --> AD DB
 
-    :param history: All moves which have been performed
-    :return: The entire set of movements without redundant moves
+    :param history: List of moves
+    :return: New list of moves without opposites
     """
-    # Remove consecutive and non-consecutive opposites
     removals = []
-    # print(history)
+    # Loop through the array, and see if any move down the line is its opposite
+    # Remove both of them only if the corresponding stacks are not touched in between
+    # ie. AB CD CD BA --> CD CD but AB AC BA stays as is
     for i, move in enumerate(history):
         for j, future_move in enumerate(history[i+1:]):
             if move[0] in future_move and move[1] not in future_move \
-                or move[1] in future_move and move[0] not in future_move:
-                # print(move, future_move)
+                    or move[1] in future_move and move[0] not in future_move:
                 break
             elif move[1] == future_move[0] and move[0] == future_move[1]:
                 removals.append(i)
-                removals.append(i+j+1)
+                removals.append(i + j + 1)
                 break
-    # print(removals)
-    history = [history[i] for i in range(len(history)) if i not in removals]
+
+    return [history[i] for i in range(len(history)) if i not in removals]
+
+def clean_up_inbetweens(history):
+    """Clean up redundant moves inbetween moves
+    ie. AB BC --> AC
+    ie. AB DE BC --> AC DE
+
+    :param history: List of moves
+    :return: Moves with redundant inbetween moves removed
+    """
+    return history
+
+    # i = 0
+    # while i < len(history):
+    #     move = history[i]
+    #     for j, future_move in enumerate(history[i+1:]):
+    #         # Remove moves inline
+    #         if move[0] != future_move[1] and move[1] == future_move[0]:
+    #             print('Cleaning up inbetweens')
+    #             # print(history, move, future_move)
+    #             # print(move, history[i])
+    #             # history.pop(i)
+    #             # print(future_move, history[i+j])
+    #             # history.pop(i+j-1)
+    #             # history.remove(move)
+    #             # history.remove(future_move)
+    #             history = [move for idx, move in enumerate(history) if idx not in (i, i+j+1)]
+    #             # history.pop(history.index(move, i-1))
+    #             # history.pop(history.index(future_move, i-1))
+    #             new_move = (move[0], future_move[1])
+    #             history.insert(i-2, new_move)
+    #             # print(history[i])
+    #     i += 1
+    #
+    # return history
 
     # idx = 0
-    # while idx < len(history)-1:
+    # while idx < len(history) - 1:
     #     start = history[idx]
-    #     end = history[idx+1]
+    #     end = history[idx + 1]
     #
     #     # turn AB BC to AC
     #     if start[1] == end[0] and start[0] != end[1]:
@@ -87,6 +122,15 @@ def clean_up_moves(history):
     #         history.pop(idx)
     #         history.insert(idx, (start[0], end[1]))
     #     idx += 1
+
+def clean_up_moves(history):
+    """Streamline the solution by removing redundant and inefficient moves
+
+    :param history: All moves which have been performed
+    :return: The entire set of movements without redundant moves
+    """
+    history = clean_up_opposites(history)
+    history = clean_up_inbetweens(history)
     return history
 
 def remove_empty_solved(stacks, possible_moves, max_stack_size):
@@ -133,7 +177,6 @@ def remove_incompatibles(stacks, possible_moves, max_stack_size):
             remove.append(pair)
 
     return [move for move in possible_moves if move not in remove]
-    # return [move for move in possible_moves if game.are_stacks_compatible(stacks[move[0]], stacks[move[1]], max_stack_size)]
 
 def remove_all_same_to_different(stacks, possible_moves):
     """Remove moves coming from a stack with all of the same colors to a stack that's not the same color
@@ -149,34 +192,7 @@ def remove_all_same_to_different(stacks, possible_moves):
         if is_stack_homog(stack1) and not is_stack_homog(stack2):
             remove.append(move)
 
-    return util.subtract_lists(possible_moves, remove)
-
-def remove_infinite_loops(stacks, possible_moves, max_stack_size):
-    """Remove all moves that would result in the solver cycling the hoop between a number of stacks indefinitely
-
-    :param stacks: Dictionary of stacks
-    :param possible_moves: Possible moves in (from, to) stack label format
-    :param max_stack_size: The maximum number of hoops in a stack
-    :return: Moves that would cause an infinite loop
-    """
-    remove = []
-    for move in possible_moves:
-        stack1 = stacks[move[0]]
-        stack2 = stacks[move[1]]
-
-        stack1_after_move = stack1[:-1]
-        stack2_after_move = stack2 + [stack1[-1]]
-
-        print(stack1, stack2)
-        print(stack1_after_move, stack2_after_move)
-        print()
-
-        if game.are_stacks_compatible(stack1, stack2, max_stack_size) \
-            and game.are_stacks_compatible(stack1_after_move, stack2_after_move, max_stack_size):
-            print(move)
-            remove.append(move)
-
-    return util.subtract_lists(possible_moves, remove)
+    return [move for move in possible_moves if move not in remove]
 
 def filter_moves(moves, game):
     """Return all possible moves
@@ -185,29 +201,11 @@ def filter_moves(moves, game):
     :param game: The game with all of the stacks
     :return: All the possible moves in (from, to) format
     """
-    # possible_moves = [move for move in moves if move not in self.move_history[str(game.stacks)]]
-    # util.print_n_at_a_time(game.stacks, 1)
-    # util.print_n_at_a_time(moves, 4)
-    # print(game.max_stack_size)
-    # print(game.stacks)
-    # print(moves)
     possible_moves = remove_incompatibles(game.stacks, moves, game.max_stack_size)
-    # print(possible_moves)
     possible_moves = remove_empty_solved(game.stacks, possible_moves, game.max_stack_size)
     possible_moves = remove_all_same_to_different(game.stacks, possible_moves)
 
     return possible_moves
-
-def score_change(prev_stacks, current_stacks):
-    pass
-
-def score_valid_moves(valid_moves, game):
-    scores = []
-    for move in valid_moves:
-        prev_stacks = copy.deepcopy(game.stacks)
-        game.move_pieces(move)
-        scores.append(score_change(prev_stacks, game.stacks))
-        game.move_pieces(move[::-1], bypassing=True)
 
 def solve(game, num_loops=10000):
     """Solve the puzzle
@@ -220,48 +218,57 @@ def solve(game, num_loops=10000):
     stack_indices = [i for i in range(game.get_num_stacks())]
     moves = list(itertools.permutations(stack_indices, 2))
 
-    move_history = []                               # All the moves the solver has performed
-    possible_moves = {}                             # All of the possible moves the can do in a given situation
-    STARTING_STACKS = copy.deepcopy(game.stacks)    # Starting stack configuration
-    stack_history = [STARTING_STACKS]               # The stack states the solution has passed through
+    move_history = []                                   # All the moves the solver has performed
+    possible_moves = {}                                 # All of the possible moves the can do in a given situation
+    STARTING_STACKS = copy.deepcopy(game.stacks)        # Starting stack configuration
+    stack_history = [(0, STARTING_STACKS)]              # The stack states the solution has passed through
 
-    loop = 0
-    while not game.is_solved():
-        if loop > num_loops:
-            print('No solution found!')
-            return move_history
-        loop += 1
+    with open('model/log.txt', 'w') as file:
+        file.write(f'{game.name}\n\n')
+        loop = 0
+        while not game.is_solved():
+            if loop > num_loops:
+                print('Out of loops!')
+                file.write(f'Out of loops!\n***** SOLUTION *****\n{move_history}')
+                return move_history
+            loop += 1
 
-        state_str = str(game.stacks)
+            state_str = '\n'.join((str(stack) for stack in game.stacks))
+            file.write(f'** {loop} **\n{state_str}\n')
 
-        # Generate all possible moves and filter out those that are invalid
-        if state_str not in possible_moves.keys():
-            possible_moves[state_str] = filter_moves(moves, game)
+            # Generate all possible moves and filter out those that are invalid
+            if state_str not in possible_moves.keys():
+                possible_moves[state_str] = filter_moves(moves, game)
 
-        # No moves
-        if len(possible_moves[state_str]) == 0:
-            try:
+                file.write('Generating new moves\n')
+                file.write(f'{possible_moves[state_str]}\n')
+
+            # No moves
+            if len(possible_moves[state_str]) == 0:
+                file.write('No possible moves at current state, backtracking\n\n')
                 if len(stack_history) == 0:
-                    stack_history.append(copy.deepcopy(STARTING_STACKS))
-                game.stacks = stack_history.pop()
-            except IndexError:
-                print('Stack history was empty')
-        else:
+                    stack_history.append((loop, copy.deepcopy(STARTING_STACKS)))
+                game.stacks = stack_history.pop()[1]
+                move_history.pop()
+
             # There are possible moves that can be performed
-            stack_history.append(copy.deepcopy(game.stacks))
+            else:
+                file.write('Moves are available\n')
+                stack_history.append((loop, copy.deepcopy(game.stacks)))
 
-            # if any((move[0] == move[1] for move in possible_moves[state_str])):
-            #     print('identical moves!')
-            #     print(possible_moves)
+                chosen_move = possible_moves[state_str].pop(0)
+                file.write(f'Chosen move: {chosen_move}\n')
 
-            chosen_move = possible_moves[state_str].pop(0)
-            # print(f'Loop {loop}, choosing move')
+                # Optimize the move if its filling a stack up
+                chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
 
-            # Optimize the move if its filling a stack up
-            chosen_move = fill_homog_efficiently(game.stacks, chosen_move)
+                game.move_pieces(chosen_move)
+                move_history.append(chosen_move)
 
-            game.move_pieces(chosen_move)
-            move_history.append(chosen_move)
+                file.write('\n')
 
-    move_history = clean_up_moves(move_history)
+        # Clean up the moves by removing redundancies and inefficiencies
+        move_history = clean_up_moves(move_history)
+        file.write(f'\n**** SOLUTION *****\n{move_history}')
+
     return move_history

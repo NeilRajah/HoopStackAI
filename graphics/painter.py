@@ -6,10 +6,8 @@ Painting to the screen
 """
 from graphics import layout_manager
 import pygame
-import thorpy
 
 BACKGROUND_COLOR = (217, 185, 155)
-# BACKGROUND_COLOR = (255, 255, 255)
 COLORS = {'red': pygame.Color('#ff0000'),
           'green': pygame.Color('#a1ff0a'),
           'cyan': pygame.Color('#0aefff'),
@@ -28,13 +26,13 @@ class Painter:
         """
         self.num_stacks = num_stacks
         self.max_stack_size = max_stack_size
-        self.locs = locs
+        self.locs = locs    # Stack locations for drawing
         self.labels = '01234567'[:num_stacks]
         self.font = pygame.font.SysFont('Consolas', layout_manager.HOOP_HEIGHT)
 
-        self.screen = None
-        self.stacks = None
-        self.stack_states = None
+        self.screen = None          # PyGame screen to draw to
+        self.stacks = None          # Stacks to draw
+        self.stack_states = None    # States of the stacks
 
     def update(self, display):
         """Set the display the painter will draw to
@@ -65,10 +63,10 @@ class Painter:
     def draw_stack(self, screen, stack, loc, state):
         """Draw a single stack to the screen
 
-        @param screen: PyGame screen to draw to
-        @param stack: Stack to draw
-        @param loc: Coordinate of the bottom of the stack in pixels
-        @param state: Whether the stack is selected or not
+        :param screen: PyGame screen to draw to
+        :param stack: Stack to draw
+        :param loc: Coordinate of the bottom of the stack in pixels
+        :param state: Whether the stack is selected or not
         """
         # Start from bottom up
         for j in range(1, len(stack) + 1, 1):

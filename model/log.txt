@@ -1,0 +1,525 @@
+Level 24
+
+** 1 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'purple', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'purple', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(5, 1)]
+Moves are available
+Chosen move: (5, 1)
+
+** 2 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'purple', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'purple']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(5, 3)]
+Moves are available
+Chosen move: (5, 3)
+
+** 3 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'purple', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(1, 5)]
+Moves are available
+Chosen move: (1, 5)
+
+** 4 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'purple', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(1, 5), (5, 1)]
+Moves are available
+Chosen move: (1, 5)
+
+** 5 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'purple']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'green', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(1, 3)]
+Moves are available
+Chosen move: (1, 3)
+
+** 6 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'green', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(5, 1)]
+Moves are available
+Chosen move: (5, 1)
+
+** 7 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(5, 1)]
+Moves are available
+Chosen move: (5, 1)
+
+** 8 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'green']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(5, 1)]
+Moves are available
+Chosen move: (5, 1)
+
+** 9 **
+['cyan', 'cyan', 'orange', 'orange', 'blue']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(0, 5), (6, 5)]
+Moves are available
+Chosen move: (0, 5)
+
+** 10 **
+['cyan', 'cyan', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'orange']
+['blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(4, 0), (6, 5)]
+Moves are available
+Chosen move: (4, 0)
+
+** 11 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple', 'pink']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink']
+['blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(2, 4), (6, 5)]
+Moves are available
+Chosen move: (2, 4)
+
+** 12 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'purple']
+['purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(2, 3), (6, 5)]
+Moves are available
+Chosen move: (2, 3)
+
+** 13 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'blue']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(6, 5), (7, 2)]
+Moves are available
+Chosen move: (6, 5)
+
+** 14 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(2, 6), (6, 2), (7, 2), (7, 6)]
+Moves are available
+Chosen move: (2, 6)
+
+** 15 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 16 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 17 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 18 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[]
+No possible moves at current state, backtracking
+
+** 19 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+No possible moves at current state, backtracking
+
+** 20 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+No possible moves at current state, backtracking
+
+** 21 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+No possible moves at current state, backtracking
+
+** 22 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red', 'cyan']
+['purple', 'red', 'red', 'blue', 'cyan']
+Moves are available
+Chosen move: (6, 2)
+
+** 23 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red']
+['purple', 'red', 'red', 'blue', 'cyan']
+Generating new moves
+[(7, 2)]
+Moves are available
+Chosen move: (7, 2)
+
+** 24 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red']
+['purple', 'red', 'red', 'blue']
+Generating new moves
+[(7, 5)]
+Moves are available
+Chosen move: (7, 5)
+
+** 25 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'red']
+['purple', 'red', 'red']
+Generating new moves
+[(6, 7), (7, 6)]
+Moves are available
+Chosen move: (6, 7)
+
+** 26 **
+['cyan', 'cyan', 'orange', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(0, 6)]
+Moves are available
+Chosen move: (0, 6)
+
+** 27 **
+['cyan', 'cyan', 'orange', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(0, 6)]
+Moves are available
+Chosen move: (0, 6)
+
+** 28 **
+['cyan', 'cyan', 'orange']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(0, 6)]
+Moves are available
+Chosen move: (0, 6)
+
+** 29 **
+['cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(2, 0)]
+Moves are available
+Chosen move: (2, 0)
+
+** 30 **
+['cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(2, 0)]
+Moves are available
+Chosen move: (2, 0)
+
+** 31 **
+['cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'cyan']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(2, 0)]
+Moves are available
+Chosen move: (2, 0)
+
+** 32 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 33 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 34 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'pink']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(4, 2)]
+Moves are available
+Chosen move: (4, 2)
+
+** 35 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red', 'red']
+Generating new moves
+[(7, 4)]
+Moves are available
+Chosen move: (7, 4)
+
+** 36 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'red']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red', 'red']
+Generating new moves
+[(7, 4)]
+Moves are available
+Chosen move: (7, 4)
+
+** 37 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'red', 'red']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple', 'red']
+Generating new moves
+[(7, 4)]
+Moves are available
+Chosen move: (7, 4)
+
+** 38 **
+['cyan', 'cyan', 'cyan', 'cyan', 'cyan']
+['green', 'green', 'green', 'green', 'green']
+['pink', 'pink', 'pink', 'pink', 'pink']
+['purple', 'purple', 'purple', 'purple']
+['red', 'red', 'red', 'red', 'red']
+['blue', 'blue', 'blue', 'blue', 'blue']
+['orange', 'orange', 'orange', 'orange', 'orange']
+['purple']
+Generating new moves
+[(3, 7), (7, 3)]
+Moves are available
+Chosen move: (3, 7)
+
+
+**** SOLUTION *****
+[(5, 1), (5, 3), (1, 5), (1, 5), (1, 3), (5, 1), (5, 1), (5, 1), (0, 5), (4, 0), (2, 4), (2, 3), (6, 5), (6, 2), (7, 2), (7, 5), (6, 7), (0, 6), (0, 6), (0, 6), (2, 0), (2, 0), (2, 0), (4, 2), (4, 2), (4, 2), (7, 4), (7, 4), (7, 4), (7, 3)]
